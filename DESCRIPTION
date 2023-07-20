@@ -1,0 +1,21 @@
+Package: png.compositionalPCA
+Title: Compositional PCA
+Version: 1.0.0
+Date: 2023-06-27
+Description: Compositional PCA.
+Authors@R: c(person(given = "Kipoong", family = "Kim",
+                    email = "kkp7700@gmail.com",
+                    role = c("aut", "cre")) )
+License: GPL (>= 3)
+Depends: R (>= 3.6.0), ggplot2, magrittr
+Imports: compositions, dplyr, reshape2, Rtsne, mnormt, MASS, quadprog, Ternary
+Suggests: rmarkdown, testthat
+URL: http://github.com/statpng
+BugReports: http://github.com/statpng
+Packaged: 2022-11-01 22:01:59 UTC; biocbuild
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+NeedsCompilation: yes
+LazyData: true
+Author: Kipoong Kim [cre] (<https://orcid.org/0000-0002-7787-2427>)
+Maintainer: Kipoong Kim <kkp7700@gmail.com>
