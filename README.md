@@ -1,7 +1,7 @@
 <!--![Banner](https://github.com/microbiome/microbiome/blob/master/vignettes/figure/composition-example4-1.png)-->
 <!--[![Follow](https://img.shields.io/twitter/follow/ropengov.svg?style=social)](https://twitter.com/intent/follow?screen_name=ropengov)-->
 
-microbiome R package
+An R package for Compositional PCA
 ==========
 
 <br>
