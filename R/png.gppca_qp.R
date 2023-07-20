@@ -8,13 +8,11 @@ if(FALSE){
 png.projection <- function(X, fit, method=c("ppca_qp", "gppca_qp")){
   if(FALSE){
     X=Xtrain; method=fit$method
-    
-    V <- fit[[5]]$vhat
-    X <- test$X2
   }
   
   n=nrow(X); p=ncol(X); r=ncol(fit$vhat)
   mu=fit$mu
+  vhat=fit$vhat
   
   if( method == "ppca_qp" ){
     
@@ -263,10 +261,10 @@ UV_update <- function(X, Vhat, maxit=100, eps=1e-4, kappa=1e-8, gamma=0.2){
                            Amat=t(V), 
                            bvec=-mu )$solution
     }
-    Unew2 <- Unew * (1-gamma/i)
+    Unew <- Unew * (1-gamma/i)
     
     # V-update
-    Vk_new <- V_update(X, Uhat=Unew2[,1:(r-1)], Vhat=Vhat, Uk=Unew2[,r], kappa=kappa)
+    Vk_new <- V_update(X, Uhat=Unew[,1:(r-1)], Vhat=Vhat, Uk=Unew[,r], kappa=kappa)
     
     est.path[[it]] <- list(uhat=Unew, vhat=cbind(Vhat,Vk_new))
     crit.path[it] <- min( sqrt(mean((Vk_old-Vk_new)^2)), sqrt(mean((Vk_old+Vk_new)^2)) )

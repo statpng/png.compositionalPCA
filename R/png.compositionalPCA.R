@@ -366,9 +366,9 @@ update_UkVk <- function(X,V,U,V0,maxit=100,eps=1e-4,kappa=1e-4,gamma=0.5){
       Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vold)
     }
     
-    Unew2 <- Unew * (1-gamma/it)
+    Unew <- Unew * (1-gamma/it)
     
-    Vnew <- V_update(X, Uhat=U, Vhat=as.matrix(V), Uk=as.matrix(Unew2), kappa=kappa)
+    Vnew <- V_update(X, Uhat=U, Vhat=as.matrix(V), Uk=as.matrix(Unew), kappa=kappa)
     
     Vnew<-Vnew/sqrt(sum(Vnew^2))
     
