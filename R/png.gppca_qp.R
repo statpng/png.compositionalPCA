@@ -4,23 +4,39 @@ if(FALSE){
 }
 
 
-#' @export png.proj
-png.proj <- function(X, vhat){
+#' @export png.projection
+png.projection <- function(X, fit, method=c("ppca_qp", "gppca_qp")){
   if(FALSE){
+    X=Xtrain; method=fit$method
+    
     V <- fit[[5]]$vhat
     X <- test$X2
   }
   
-  mu <- colMeans(X)
-  n <- nrow(X)
-  p <- ncol(X)
+  n=nrow(X); p=ncol(X); r=ncol(fit$vhat)
+  mu=fit$mu
   
-  xhat <- matrix(0,n,p)
-  for( i in 1:n ){
-    x <- test$X2[i,]
-    uhat <- multidimconvexprojection(mu, x, vhat)
-    xhat[i,] <- mu + tcrossprod(uhat,vhat)
+  if( method == "ppca_qp" ){
+    
+    uhat <- matrix(0,n,r)
+    for( k in 1:r ){
+      for( i in 1:n ){
+        chat <- tcrossprod(rep(1,n), mu) + tcrossprod(uhat[,1:(k-1)], vhat[,1:(k-1)])
+        uhat[i,k] <- onedimconvexprojection(chat[i,], X[i,], vhat[,k])
+      }
+    }
+    
+  } else if( method == "gppca_qp" ){
+    
+    uhat <- matrix(0,n,r)
+    for( i in 1:n ){
+      uhat[i,] <- multidimconvexprojection(mu, X[i,], vhat)
+    }
+
   }
+  
+  xhat <- mu + tcrossprod(uhat, vhat)
+  
   
   return(xhat)
 }
@@ -29,7 +45,7 @@ png.proj <- function(X, vhat){
 
 
 #' @export png.gppca_qp
-png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5){
+png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5, save.est.path=FALSE){
   if(FALSE){
     nrank=2; epsilon=1e-4; maxit=100; kappa=1e-8
   }
@@ -90,6 +106,10 @@ png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5)
       U_total <- fit.UV$uhat
       V_total <- fit.UV$vhat
       
+      if(!save.est.path){
+        fit.UV$est.path <- NULL
+      }
+      
       fit.path[[iter]] <- fit.UV
     }
   }
@@ -101,7 +121,8 @@ png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5)
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(U_total, V_total)
   xhat <- ifelse(abs(xhat)<1e-10,0,xhat)
   
-  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, fit.rank1=fit.rank1, maxit=maxit, time=end-start))
+  
+  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, fit.rank1=fit.rank1, maxit=maxit, time=end-start, method="gppca_qp"))
   
 }
 
@@ -204,6 +225,10 @@ UV_update <- function(X, Vhat, maxit=100, eps=1e-4, kappa=1e-8, gamma=0.2){
     UV_update(X, Vhat)
   }
   
+  
+  
+  
+  
   n=nrow(X); p=ncol(X); r=NCOL(Vhat)+1
   mu=colMeans(X);
   
@@ -238,10 +263,10 @@ UV_update <- function(X, Vhat, maxit=100, eps=1e-4, kappa=1e-8, gamma=0.2){
                            Amat=t(V), 
                            bvec=-mu )$solution
     }
-    Unew <- Unew * (1-gamma/i)
+    Unew2 <- Unew * (1-gamma/i)
     
     # V-update
-    Vk_new <- V_update(X, Uhat=Unew[,1:(r-1)], Vhat=Vhat, Uk=Unew[,r], kappa=kappa)
+    Vk_new <- V_update(X, Uhat=Unew2[,1:(r-1)], Vhat=Vhat, Uk=Unew2[,r], kappa=kappa)
     
     est.path[[it]] <- list(uhat=Unew, vhat=cbind(Vhat,Vk_new))
     crit.path[it] <- min( sqrt(mean((Vk_old-Vk_new)^2)), sqrt(mean((Vk_old+Vk_new)^2)) )

@@ -132,7 +132,13 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
   
   print(paste0("seed=", seed))
   
-  return( list(mu=mu, U=U, D=D, V=V, E=E, X=X, X2=X2) )
+  
+  params <- c(n=n, p=p, r=r, snr=snr, d=d, d0=d0, seed=seed, seed.U=seed.U, seed.V=seed.V, alpha=alpha, eta=eta)
+  
+  result <- list(mu=mu, U=U, D=D, V=V, E=E, X=X, X2=X2, params=params)
+  
+    
+  return( result )
   
 }
 
