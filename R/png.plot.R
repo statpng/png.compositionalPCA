@@ -83,20 +83,6 @@ png.pca.plot_convergence <- function(fit, maxit=100){
 
 
 
-png.sim.simplex.test <- function(params){
-  TestData <- params %>% 
-    { sim.simplex(n=.["n"], 
-                  p=.["p"], 
-                  r=.["r"], 
-                  snr=.["snr"], 
-                  d=.["d"],
-                  d0=.["d0"],
-                  seed.U=.["seed.U"]*2,
-                  seed.V=.["seed.V"],
-                  eta=.["eta"]) }
-  
-  TestData
-}
 
 
 
@@ -123,9 +109,11 @@ png.pca.criteria <- function(fit, data, n.test){
     n=500; p=50; r=5; snr=2; eta=0.1/log(p); seed=1
     data <- sim.simplex(n=n,p=p,r=r,snr=snr,d=10,d0=0.01,seed=seed,eta=eta)
     
-    fit <- png.ppca_qp(data$X2, nrank=r, kappa=1e-5, maxit=500, eps=1e-6, gamma=0.5, save.est.path = TRUE)
+    fit1 <- png.ppca_qp(data$X2, nrank=r, kappa=1e-6, maxit=500, eps=1e-6, gamma=0.5, save.est.path = TRUE)
+    fit2 <- png.gppca_qp(data$X2, nrank=r, kappa=1e-6, maxit=500, eps=1e-6, gamma=0.5, save.est.path = TRUE)
     
-    png.pca.criteria(fit, data, n.test=n*10)
+    fit1 %>% png.pca.criteria(data, n.test=n*5)
+    fit2 %>% png.pca.criteria(data, n.test=n*5)
     
   }
   
@@ -140,18 +128,17 @@ png.pca.criteria <- function(fit, data, n.test){
   Vtrue=true$V
   
   vhat <- fit$vhat
-  xhat <- fit$xhat
-  xhat_train <- png.projection(Xtrain, fit, method=fit$method)
+  xhat_train <- fit$xhat
   xhat_test <- png.projection(Xtest, fit, method=fit$method)
   
-  xhat[1:5,1:5]
+  png.projection(Xtrain, fit, method=fit$method)[1:5,1:5]
   xhat_train[1:5,1:5]
   
-  rmse.Xtrain <- sqrt(mean((Xtrain-xhat)^2))
-  rmse.Xtest <- sqrt(mean((Xtest-xhat)^2))
+  rmse.Xtrain <- sqrt(mean((Xtrain-xhat_train)^2))
+  rmse.Xtest <- sqrt(mean((Xtest-xhat_test)^2))
   Pangle.V <- png.angle(Vtrue, vhat)$max
   Gangle.V <- png.angle(Vtrue, vhat)$Grassmannian
-  OutOfSimplex <- mean(apply(xhat,1,function(x) any(x < -1e-10)))
+  OutOfSimplex <- mean(apply(xhat_train,1,function(x) any(x < -1e-10)))
   # Out-of-simplex Sample Percentage
   
   c(rmse.Xtrain=rmse.Xtrain,

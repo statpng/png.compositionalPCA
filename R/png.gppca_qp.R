@@ -18,10 +18,12 @@ png.projection <- function(X, fit, method=c("ppca_qp", "gppca_qp")){
     
     uhat <- matrix(0,n,r)
     for( k in 1:r ){
+      chat <- tcrossprod(rep(1,n), mu) + tcrossprod(uhat[,1:(k-1)], vhat[,1:(k-1)])
       for( i in 1:n ){
-        chat <- tcrossprod(rep(1,n), mu) + tcrossprod(uhat[,1:(k-1)], vhat[,1:(k-1)])
         uhat[i,k] <- onedimconvexprojection(chat[i,], X[i,], vhat[,k])
       }
+      it=fit$fit.path[[k]]$it;  gamma=fit$params$gamma
+      uhat[,k] <- uhat[,k] * (1-gamma/it)
     }
     
   } else if( method == "gppca_qp" ){
@@ -30,10 +32,11 @@ png.projection <- function(X, fit, method=c("ppca_qp", "gppca_qp")){
     for( i in 1:n ){
       uhat[i,] <- multidimconvexprojection(mu, X[i,], vhat)
     }
-
+    it=fit$fit.path[[r]]$it;  gamma=fit$params$gamma
+    uhat <- uhat * (1-gamma/it)
   }
   
-  xhat <- mu + tcrossprod(uhat, vhat)
+  xhat <- tcrossprod(rep(1,n), mu) + tcrossprod(uhat, vhat)
   
   
   return(xhat)
@@ -120,7 +123,13 @@ png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5,
   xhat <- ifelse(abs(xhat)<1e-10,0,xhat)
   
   
-  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, fit.rank1=fit.rank1, maxit=maxit, time=end-start, method="gppca_qp"))
+  params=list(nrank=nrank, 
+              maxit=maxit, 
+              eps=eps, 
+              kappa=kappa, 
+              gamma=gamma)
+  
+  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, fit.rank1=fit.rank1, maxit=maxit, time=end-start, params=params, method="gppca_qp"))
   
 }
 
@@ -139,7 +148,8 @@ png.rank1 <- function(X, maxit=100, eps=1e-4, gamma=0.2){
   require(quadprog)
   
   n=nrow(X); p=ncol(X);
-  mu=colMeans(X); C=tcrossprod(rep(1,n),mu)
+  mu=colMeans(X); 
+  C=tcrossprod(rep(1,n), mu)
   
   # Initial V0
   V0=prcomp(X-tcrossprod(rep(1,n),mu))$rotation[,1]
@@ -153,7 +163,7 @@ png.rank1 <- function(X, maxit=100, eps=1e-4, gamma=0.2){
     for(i in 1:n){
       Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vold)
     }
-    Unew <- Unew * (1-gamma/i)
+    Unew <- Unew * (1-gamma/it)
     
     Vnew <- V_update(X, Uhat=matrix(0,n,1), Vhat=matrix(0,p,1), Uk=as.matrix(Unew))
     Vnew <- Vnew/sqrt(sum(Vnew^2))
@@ -161,9 +171,16 @@ png.rank1 <- function(X, maxit=100, eps=1e-4, gamma=0.2){
     est.path[[it]] <- list(uhat=Unew, vhat=Vnew)
     crit.path[it] <- min( sqrt(mean((Vnew-Vold)^2)), sqrt(mean((Vnew+Vold)^2)) )
     
-    if( crit.path[it] < eps ) break;
+    if( crit.path[it] < eps ){
+      break;
+    }
     
   }
+  
+  # Unew<-rep(0,n)
+  # for(i in 1:n){
+  #   Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
+  # }
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(Unew,Vnew)
   
@@ -261,7 +278,7 @@ UV_update <- function(X, Vhat, maxit=100, eps=1e-4, kappa=1e-8, gamma=0.2){
                            Amat=t(V), 
                            bvec=-mu )$solution
     }
-    Unew <- Unew * (1-gamma/i)
+    Unew <- Unew * (1-gamma/it)
     
     # V-update
     Vk_new <- V_update(X, Uhat=Unew[,1:(r-1)], Vhat=Vhat, Uk=Unew[,r], kappa=kappa)
@@ -269,10 +286,20 @@ UV_update <- function(X, Vhat, maxit=100, eps=1e-4, kappa=1e-8, gamma=0.2){
     est.path[[it]] <- list(uhat=Unew, vhat=cbind(Vhat,Vk_new))
     crit.path[it] <- min( sqrt(mean((Vk_old-Vk_new)^2)), sqrt(mean((Vk_old+Vk_new)^2)) )
     
-    if( crit.path[it] < eps ) break;
+    if( crit.path[it] < eps ){
+      break;
+    }
   }
   
   Vnew <- cbind(Vhat, Vk_new)
+  
+  # Unew <- matrix(0,n,r);
+  # for( i in 1:n ){
+  #   Unew[i,] <- solve.QP(Dmat=diag(rep(1,r)), 
+  #                        dvec=t(Vnew) %*% (as.vector(X[i,])-mu), 
+  #                        Amat=t(Vnew), 
+  #                        bvec=-mu )$solution
+  # }
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(Unew,Vnew)
   

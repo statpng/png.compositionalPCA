@@ -144,6 +144,25 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
 
 
 
+#' @export png.sim.simplex.test
+png.sim.simplex.test <- function(params){
+  TestData <- params %>% 
+    { sim.simplex(n=.["n"], 
+                  p=.["p"], 
+                  r=.["r"], 
+                  snr=.["snr"], 
+                  d=.["d"],
+                  d0=.["d0"],
+                  seed.U=.["seed.U"]*2,
+                  seed.V=.["seed.V"],
+                  eta=.["eta"]) }
+  
+  TestData
+}
+
+
+
+
 
 #' @export sim.simplex2
 sim.simplex2 <- function(n, p, r, snr=2, d=10, d0=0.1, seed=1, seed.U=seed, seed.V=seed, alpha=NULL){
@@ -214,5 +233,6 @@ sim.simplex2 <- function(n, p, r, snr=2, d=10, d0=0.1, seed=1, seed.U=seed, seed
   return( list(mu=mu, U=U, D=D, V=V, E=E, X=X, X2=X2) )
   
 }
+
 
 

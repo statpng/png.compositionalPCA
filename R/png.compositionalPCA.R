@@ -381,6 +381,12 @@ update_UkVk <- function(X,V,U,V0,maxit=100,eps=1e-4,kappa=1e-4,gamma=0.5){
     
   }
   
+  
+  # Unew<-rep(0,n)
+  # for(i in 1:n){
+  #   Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
+  # }
+  
   result <- list(uhat=Unew, vhat=Vnew, it=it, est.path=est.path, crit.path=crit.path)
   
   return(result)
@@ -405,6 +411,7 @@ png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5, 
     png.plot.pca3d(fit$mu, fit$uhat, fit$vhat)
     fit$vhat
     
+    nrank=r; kappa=1e-6; maxit=500; eps=1e-6; gamma=0.5; save.est.path = TRUE
   }
   
   library(quadprog)
@@ -420,7 +427,7 @@ png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5, 
   fit.path <- NULL
   for( iter in 1:nrank ){
     if( iter == 1 ){
-      fit.rank1 <- png.rank1(X)
+      fit.rank1 <- png.rank1(X, maxit=maxit, eps=eps, gamma=gamma)
       
       U_total <- cbind(U_total, fit.rank1$uhat)
       V_total <- cbind(V_total, fit.rank1$vhat)
@@ -447,6 +454,12 @@ png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5, 
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(U_total, V_total)
   
-  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, maxit=maxit, method="ppca_qp"))
+  params=list(nrank=nrank, 
+              maxit=maxit, 
+              eps=eps, 
+              kappa=kappa, 
+              gamma=gamma)
+  
+  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, maxit=maxit, method="ppca_qp", params=params))
   
 }
