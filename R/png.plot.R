@@ -131,20 +131,22 @@ png.pca.criteria <- function(fit, data, n.test){
   xhat_train <- fit$xhat
   xhat_test <- png.projection(Xtest, fit, method=fit$method)
   
-  png.projection(Xtrain, fit, method=fit$method)[1:5,1:5]
-  xhat_train[1:5,1:5]
+  # png.projection(Xtrain, fit, method=fit$method)[1:5,1:5]
+  # xhat_train[1:5,1:5]
   
   rmse.Xtrain <- sqrt(mean((Xtrain-xhat_train)^2))
   rmse.Xtest <- sqrt(mean((Xtest-xhat_test)^2))
   Pangle.V <- png.angle(Vtrue, vhat)$max
   Gangle.V <- png.angle(Vtrue, vhat)$Grassmannian
-  OutOfSimplex <- mean(apply(xhat_train,1,function(x) any(x < -1e-10)))
+  OutOfSimplex <- mean(apply(xhat_train,1,function(x) any(x < -1e-8)))
+  Sparsity <- mean( abs(xhat_train) < 1e-12 )
   # Out-of-simplex Sample Percentage
   
   c(rmse.Xtrain=rmse.Xtrain,
     rmse.Xtest=rmse.Xtest,
     Pangle.V=Pangle.V,
     Gangle.V=Gangle.V,
-    OutOfSimplex=OutOfSimplex)
+    OutOfSimplex=OutOfSimplex,
+    Sparsity=Sparsity)
   
 }

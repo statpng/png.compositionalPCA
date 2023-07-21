@@ -177,10 +177,10 @@ png.rank1 <- function(X, maxit=100, eps=1e-4, gamma=0.2){
     
   }
   
-  # Unew<-rep(0,n)
-  # for(i in 1:n){
-  #   Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
-  # }
+  Unew<-rep(0,n)
+  for(i in 1:n){
+    Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
+  }
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(Unew,Vnew)
   
@@ -293,13 +293,13 @@ UV_update <- function(X, Vhat, maxit=100, eps=1e-4, kappa=1e-8, gamma=0.2){
   
   Vnew <- cbind(Vhat, Vk_new)
   
-  # Unew <- matrix(0,n,r);
-  # for( i in 1:n ){
-  #   Unew[i,] <- solve.QP(Dmat=diag(rep(1,r)), 
-  #                        dvec=t(Vnew) %*% (as.vector(X[i,])-mu), 
-  #                        Amat=t(Vnew), 
-  #                        bvec=-mu )$solution
-  # }
+  Unew <- matrix(0,n,r);
+  for( i in 1:n ){
+    Unew[i,] <- solve.QP(Dmat=diag(rep(1,r)),
+                         dvec=t(Vnew) %*% (as.vector(X[i,])-mu),
+                         Amat=t(Vnew),
+                         bvec=-mu )$solution
+  }
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(Unew,Vnew)
   

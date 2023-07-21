@@ -382,10 +382,10 @@ update_UkVk <- function(X,V,U,V0,maxit=100,eps=1e-4,kappa=1e-4,gamma=0.5){
   }
   
   
-  # Unew<-rep(0,n)
-  # for(i in 1:n){
-  #   Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
-  # }
+  Unew<-rep(0,n)
+  for(i in 1:n){
+    Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
+  }
   
   result <- list(uhat=Unew, vhat=Vnew, it=it, est.path=est.path, crit.path=crit.path)
   
