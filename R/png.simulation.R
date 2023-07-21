@@ -91,6 +91,21 @@ sim02_kappa_gamma <- function(n, p, r, snr, eta, kappa=1e-2, gamma=0.5, seed){
 
 
 
+#' @export png.list.replace
+png.list.replace <- function(params, List){
+  # list_to_be_replaced
+  if(FALSE){
+    List=list(kappa.seq=1e-2, gamma.seq=0.5)
+  }
+  
+  for( i in 1:length(List) ){
+    params[ names(List)[i] ] <- List[[i]]
+  }
+  params
+}
+
+
+
 
 #' @export run.sim
 run.sim <- function(f.sim, params){
@@ -114,17 +129,6 @@ run.sim <- function(f.sim, params){
                          seed.seq=seed.seq)
     }
     
-    png.list.replace <- function(params, List){
-      # list_to_be_replaced
-      if(FALSE){
-        List=list(kappa.seq=1e-2, gamma.seq=0.5)
-      }
-      
-      for( i in 1:length(List) ){
-        params[ names(List)[i] ] <- List[[i]]
-      }
-      params
-    }
     
     
     
@@ -134,14 +138,13 @@ run.sim <- function(f.sim, params){
                                     kappa.seq=1e-2, 
                                     gamma.seq=0.5)))
     
-    run.sim(sim01_convergence, 
-            params=params %>% 
-              png.list.replace(list(n.seq=50, 
-                                    kappa.seq=1e-2, 
-                                    gamma.seq=0.5)))
+    run.sim(sim02_kappa_gamma, 
+            params=params)
     
     
   }  
+  
+  title <- deparse(substitute(f.sim))
   
   
   grid <- expand.grid(params)
@@ -160,7 +163,7 @@ run.sim <- function(f.sim, params){
     r=5, snr=2,
     mc.cores = parallel::detectCores()-1)
   
-  save(result, file="./result.RData")
+  save(result, file=paste0("./",title,".RData"))
 }
 
 
