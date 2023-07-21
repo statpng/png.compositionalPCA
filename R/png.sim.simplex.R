@@ -80,7 +80,7 @@ png.NormalVector <- function(x,v){
 
 
 #' @export sim.simplex
-sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed.V=seed, alpha=NULL, eta=0){
+sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed.V=seed, alpha=NULL, eta=0, verbose=FALSE){
   # Simulate compositional data
   
   if(FALSE){
@@ -125,12 +125,12 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
   
   
   snr_out <- sum(tcrossprod(U,V)^2) / sum(E^2)
-  print(paste0("delta=",round(delta_snr,4), "; snr=", round(snr_out,4)))
+  if(verbose) print(paste0("delta=",round(delta_snr,4), "; snr=", round(snr_out,4)))
   
   idx_not_sum_to_unit <- which(apply(X2,1,sum)>0.9999 & apply(X2,1,sum)<1)
   X2[idx_not_sum_to_unit,] <- t(apply(X2[idx_not_sum_to_unit,,drop=F],1,function(x) x/sum(x)))
   
-  print(paste0("seed=", seed))
+  if(verbose) print(paste0("seed=", seed))
   
   
   params <- c(n=n, p=p, r=r, snr=snr, d=d, d0=d0, seed=seed, seed.U=seed.U, seed.V=seed.V, alpha=alpha, eta=eta)
@@ -224,12 +224,12 @@ sim.simplex2 <- function(n, p, r, snr=2, d=10, d0=0.1, seed=1, seed.U=seed, seed
   
   
   snr_out <- sum(tcrossprod(U,V)^2) / sum(E^2)
-  print(paste0("delta=",round(delta_snr,4), "; snr=", round(snr_out,4)))
+  if(verbose) print(paste0("delta=",round(delta_snr,4), "; snr=", round(snr_out,4)))
   
   idx_not_sum_to_unit <- which(apply(X2,1,sum)>0.99909 & apply(X2,1,sum)<1)
   X2[idx_not_sum_to_unit,] <- t(apply(X2[idx_not_sum_to_unit,,drop=F],1,function(x) x/sum(x)))
  
-  print(paste0("seed=", seed))
+  if(verbose) print(paste0("seed=", seed))
   return( list(mu=mu, U=U, D=D, V=V, E=E, X=X, X2=X2) )
   
 }
