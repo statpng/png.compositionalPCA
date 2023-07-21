@@ -106,11 +106,11 @@ png.angle <- function(true, est){
 #' @export png.pca.criteria
 png.pca.criteria <- function(fit, data, n.test){
   if(FALSE){
-    n=500; p=50; r=5; snr=2; eta=0.1/log(p); seed=1
+    n=50; p=50; r=5; snr=2; eta=0.1/log(p); seed=1
     data <- sim.simplex(n=n,p=p,r=r,snr=snr,d=10,d0=0.01,seed=seed,eta=eta)
     
-    fit1 <- png.ppca_qp(data$X2, nrank=r, kappa=1e-6, maxit=500, eps=1e-6, gamma=0.5, save.est.path = TRUE)
-    fit2 <- png.gppca_qp(data$X2, nrank=r, kappa=1e-6, maxit=500, eps=1e-6, gamma=0.5, save.est.path = TRUE)
+    fit1 <- png.ppca_qp(data$X2, nrank=r, kappa=1e-6, maxit=2000, eps=1e-6, gamma=0.5, save.est.path = TRUE)
+    fit2 <- png.gppca_qp(data$X2, nrank=r, kappa=1e-6, maxit=2000, eps=1e-6, gamma=0.5, save.est.path = TRUE)
     
     fit1 %>% png.pca.criteria(data, n.test=n*5)
     fit2 %>% png.pca.criteria(data, n.test=n*5)
@@ -138,15 +138,20 @@ png.pca.criteria <- function(fit, data, n.test){
   rmse.Xtest <- sqrt(mean((Xtest-xhat_test)^2))
   Pangle.V <- png.angle(Vtrue, vhat)$max
   Gangle.V <- png.angle(Vtrue, vhat)$Grassmannian
+  # Out-of-simplex Sample Percentage
   OutOfSimplex <- mean(apply(xhat_train,1,function(x) any(x < -1e-8)))
   Sparsity <- mean( abs(xhat_train) < 1e-12 )
-  # Out-of-simplex Sample Percentage
+  Convergence <- sapply(fit$fit.path, function(fit_rank) fit_rank$it < fit$maxit)
+  # fit$fit.path[[4]]$crit.path[-(1:100)] %>% plot(type="l")
+  # fit$fit.path[[4]]$crit.path %>% tail
+  
   
   c(rmse.Xtrain=rmse.Xtrain,
     rmse.Xtest=rmse.Xtest,
     Pangle.V=Pangle.V,
     Gangle.V=Gangle.V,
     OutOfSimplex=OutOfSimplex,
-    Sparsity=Sparsity)
+    Sparsity=Sparsity,
+    Convergence=Convergence)
   
 }
