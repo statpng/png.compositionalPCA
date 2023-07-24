@@ -90,6 +90,38 @@ sim02_kappa_gamma <- function(n, p, r, snr, eta, kappa=1e-2, gamma=0.5, seed){
 }
 
 
+if(FALSE){
+  
+  tmp <- function(n,seed=1){
+    r=2; kappa=1e-4; gamma=1e-1
+    data <- sim.simplex(n=n,p=4,r=r,snr=2,d=10,d0=0.01,seed=seed,eta=0/log(p))
+    X <- data$X2
+    
+    fit_ppca <- try(png.ppca_qp(X, nrank=r, kappa=kappa, maxit=500, eps=1e-6, gamma=gamma))
+    fit_gppca <- try(png.gppca_qp(X, nrank=r, kappa=kappa, maxit=500, eps=1e-6, gamma=gamma))
+    res1 <- try(png.pca.criteria(fit_ppca, data, n.test=n*10))
+    res2 <- try(png.pca.criteria(fit_gppca, data, n.test=n*10))
+    
+    list(data=data,fit_ppca=fit_ppca,fit_gppca=fit_gppca,
+         res1=res1,res2=res2)
+  }
+  
+  tmp1 <- tmp(n=200,seed=2)
+  tmp2 <- tmp(n=500,seed=2)
+  
+  tmp1$res2
+  tmp2$res2
+    
+  png.quaternary3d(tmp1$data$X2, 
+                   vhat=tmp1$fit_gppca$vhat, 
+                   xhat=tmp1$fit_gppca$xhat)
+  
+  png.quaternary3d(tmp2$data$X2, vhat=tmp2$data$V)
+  
+  tmp1$data$V
+  tmp2$data$V
+  
+}
 
 #' @export png.list.replace
 png.list.replace <- function(params, List){
@@ -164,6 +196,49 @@ run.sim <- function(f.sim, params){
     mc.cores = parallel::detectCores()-1)
   
   save(result, file=paste0("./",title,".RData"))
+}
+
+
+
+
+res.reshape <- function(res1, param.list, type="data.frame"){
+  # Reshape the res1 to a matrix form
+  
+  out.array <- png.dflist2array(res1)
+  
+  n.out <- length(res1) / prod(sapply(param.list,length))
+  res1_array <- array(out.array, 
+                      dim=c(dim(out.array)[1], 
+                            dim(out.array)[2],
+                            sapply(param.list,length)),
+                      dimnames=append(dimnames(out.array)[1:2], param.list) )
+  
+  if(type == "data.frame"){
+    output <- plyr::adply( res1_array, 1:length(dim(res1_array)) )
+    colnames(output)[ncol(output)] <- "value"
+    
+    return(output)
+  } else {
+    return(res1_array)
+  }
+  
+}
+
+
+png.dflist2array <- function(df){
+  N=nrow(df); P=ncol(df)
+  out.array <- array(NA, dim=c(length(df[1,1][[1]]), nrow(df), ncol(df)))
+  dimnames(out.array)[[2]] <- rownames(df)
+  dimnames(out.array)[[1]] <- gsub("^[a-z]+\\.", "", names(df[1,1][[1]]))
+  
+  for( j in 1:P ){
+    out <- NULL
+    for( i in 1:N ){
+      out <- cbind(out, unlist(df[i,j]))
+    }
+    out.array[,,j] <- out
+  }
+  return(out.array)
 }
 
 

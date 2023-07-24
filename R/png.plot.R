@@ -117,6 +117,12 @@ png.pca.criteria <- function(fit, data, n.test){
     
   }
   
+  if(FALSE){
+    fit=fit_ppca
+    data
+    n.test=200
+  }
+  
 
   data$params["n"] <- n.test
   true <- data %>% { list(Xtrain=.$X2,
@@ -133,6 +139,9 @@ png.pca.criteria <- function(fit, data, n.test){
   
   # png.projection(Xtrain, fit, method=fit$method)[1:5,1:5]
   # xhat_train[1:5,1:5]
+  
+  obj.Xtrain <- sqrt(mean((Xtrain-xhat_train)^2))
+  obj.Xtest <- sqrt(mean((Xtest-xhat_test)^2))
   
   rmse.Xtrain <- sqrt(mean((Xtrain-xhat_train)^2))
   rmse.Xtest <- sqrt(mean((Xtest-xhat_test)^2))

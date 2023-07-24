@@ -153,7 +153,7 @@ png.sim.simplex.test <- function(params){
                   snr=.["snr"], 
                   d=.["d"],
                   d0=.["d0"],
-                  seed.U=.["seed.U"]*2,
+                  seed.U=.["seed.U"]*1234,
                   seed.V=.["seed.V"],
                   eta=.["eta"]) }
   

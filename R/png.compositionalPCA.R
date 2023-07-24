@@ -333,68 +333,6 @@ png.gppca <- function(X, nrank=2, V=prcomp(X)$rotation[,1:nrank,drop=F]){
 # }
 
 
-#' @export update_UkVk
-update_UkVk <- function(X,V,U,V0,maxit=100,eps=1e-4,kappa=1e-4,gamma=0.5){
-  
-  # X is n\times p data matrix and u\in S^{p}, V=(\hat{V}_{1}, \cdots, \hat{V}_{k-1}) are given direction vectors, U=(\hat{U}_{1}, \cdots, \hat{U}_{k-1}) are given projection scores, V0 is an initial value of V_{k}
-  
-  if(FALSE){
-    X=X
-    V=V_total
-    U=U_total
-    V0=V0
-    eta=eta
-  }
-  
-  require(quadprog)
-  
-  n<-nrow(X)
-  p<-ncol(X)
-  d<-ncol(U)
-  mu <- colMeans(X)
-  
-  
-  C<-tcrossprod(rep(1,n),mu)+U%*%t(V)
-  
-  Vold<-V0
-  
-  est.path <- crit.path <- NULL
-  for( it in 1:maxit ){
-    
-    Unew<-rep(0,n)
-    for(i in 1:n){
-      Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vold)
-    }
-    
-    Unew <- Unew * (1-gamma/it)
-    
-    Vnew <- V_update(X, Uhat=U, Vhat=as.matrix(V), Uk=as.matrix(Unew), kappa=kappa)
-    
-    Vnew<-Vnew/sqrt(sum(Vnew^2))
-    
-    est.path[[it]] <- list(uhat=cbind(U,Unew), vhat=cbind(V,Vnew))
-    crit.path[it] <- min( sqrt(mean((Vnew-Vold)^2)), sqrt(mean((Vnew+Vold)^2)) )
-    if( crit.path[it] < eps ){
-      break
-    }
-    Vold<-Vnew
-    
-  }
-  
-  
-  Unew<-rep(0,n)
-  for(i in 1:n){
-    Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
-  }
-  
-  result <- list(uhat=Unew, vhat=Vnew, it=it, est.path=est.path, crit.path=crit.path)
-  
-  return(result)
-
-}
-
-
-
 
 
 
@@ -461,5 +399,77 @@ png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5, 
               gamma=gamma)
   
   return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, maxit=maxit, method="ppca_qp", params=params))
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' @export update_UkVk
+update_UkVk <- function(X,V,U,V0,maxit=100,eps=1e-4,kappa=1e-4,gamma=0.5){
+  
+  # X is n\times p data matrix and u\in S^{p}, V=(\hat{V}_{1}, \cdots, \hat{V}_{k-1}) are given direction vectors, U=(\hat{U}_{1}, \cdots, \hat{U}_{k-1}) are given projection scores, V0 is an initial value of V_{k}
+  
+  if(FALSE){
+    X=X
+    V=V_total
+    U=U_total
+    V0=V0
+    eta=eta
+  }
+  
+  require(quadprog)
+  
+  n<-nrow(X)
+  p<-ncol(X)
+  d<-ncol(U)
+  mu <- colMeans(X)
+  
+  
+  C<-tcrossprod(rep(1,n),mu)+U%*%t(V)
+  
+  Vold<-V0
+  
+  est.path <- crit.path <- NULL
+  for( it in 1:maxit ){
+    
+    Unew<-rep(0,n)
+    for(i in 1:n){
+      Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vold)
+    }
+    
+    Unew <- Unew * (1-gamma/it)
+    
+    Vnew <- V_update(X, Uhat=U, Vhat=as.matrix(V), Uk=as.matrix(Unew), kappa=kappa)
+    
+    Vnew<-Vnew/sqrt(sum(Vnew^2))
+    
+    est.path[[it]] <- list(uhat=cbind(U,Unew), vhat=cbind(V,Vnew))
+    crit.path[it] <- min( sqrt(mean((Vnew-Vold)^2)), sqrt(mean((Vnew+Vold)^2)) )
+    if( crit.path[it] < eps ){
+      break
+    }
+    Vold<-Vnew
+    
+  }
+  
+  
+  Unew<-rep(0,n)
+  for(i in 1:n){
+    Unew[i]<-onedimconvexprojection(C[i,],X[i,],Vnew)
+  }
+  
+  result <- list(uhat=Unew, vhat=Vnew, it=it, est.path=est.path, crit.path=crit.path)
+  
+  return(result)
   
 }
