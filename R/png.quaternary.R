@@ -66,7 +66,7 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, xhat.col="darkred", cex=0.5,
   if(!is.null(vhat)){
     if(is.list(vhat)){
       
-      for( jj in 1:NCOL(vhat[[ii]]) ){
+      for( jj in 1:NCOL(vhat[[1]]) ){
         for( ii in 1:(length(vhat)-1) ){
           vhat.i1 = vhat[[ii]][,jj]
           vhat.i2 = vhat[[ii+1]][,jj]

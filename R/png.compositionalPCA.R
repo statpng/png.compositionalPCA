@@ -152,7 +152,7 @@ png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
   })
   xhat <- fit$xhat %>% {t(apply(.,1,png.iclr))}
   
-  return( list(mu=mu, uhat=uhat, vhat=vhat, xhat=xhat, X=X, Xnew=Xnew) )
+  return( list(mu=mu, uhat=uhat, vhat=vhat, logvhat=fit$vhat, xhat=xhat, X=X, Xnew=Xnew) )
 }
 
 
