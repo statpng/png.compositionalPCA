@@ -5,16 +5,16 @@ if(FALSE){
 
 
 #' @export png.projection
-png.projection <- function(X, fit, method=c("ppca_qp", "gppca_qp")){
+png.projection <- function(X, fit, method=c("ppca", "gppca", "lrpca")){
   if(FALSE){
     X=Xtrain; method=fit$method
   }
   
-  n=nrow(X); p=ncol(X); r=ncol(fit$vhat)
+  n=nrow(X); p=ncol(X); r=NCOL(fit$uhat)
   mu=fit$mu
   vhat=fit$vhat
   
-  if( method == "ppca_qp" ){
+  if( method == "ppca" ){
     
     uhat <- matrix(0,n,r)
     for( k in 1:r ){
@@ -22,22 +22,40 @@ png.projection <- function(X, fit, method=c("ppca_qp", "gppca_qp")){
       for( i in 1:n ){
         uhat[i,k] <- onedimconvexprojection(chat[i,], X[i,], vhat[,k])
       }
-      it=fit$fit.path[[k]]$it;  gamma=fit$params$gamma
-      uhat[,k] <- uhat[,k] * (1-gamma/it)
+      # it=fit$fit.path[[k]]$it;  gamma=fit$params$gamma
+      # uhat[,k] <- uhat[,k] * (1-gamma/it)
     }
     
-  } else if( method == "gppca_qp" ){
+  } else if( method == "gppca" ){
     
     uhat <- matrix(0,n,r)
     for( i in 1:n ){
       uhat[i,] <- multidimconvexprojection(mu, X[i,], vhat)
     }
-    it=fit$fit.path[[r]]$it;  gamma=fit$params$gamma
-    uhat <- uhat * (1-gamma/it)
+    # it=fit$fit.path[[r]]$it;  gamma=fit$params$gamma
+    # uhat <- uhat * (1-gamma/it)
+    
+  } else if( method == "lrpca" ){
+    
+    f <- switch(fit$zero.replace, 
+                "simple"=png.ZeroReplace.simple,
+                "additive"=png.ZeroReplace.additive,
+                "multiplicative"=png.ZeroReplace.multiplicative)
+    
+    Xnew <- t(apply(X, 1, f, delta=fit$delta))
+    Xclr <- t(apply(Xnew, 1, png.clr))
+    
+    mu <- t(apply(fit$Xnew, 1, png.clr)) %>% colMeans()
+    vhat <- fit$logvhat
+    uhat <- (Xclr - tcrossprod(rep(1,n),mu)) %*% vhat
+    
   }
   
   xhat <- tcrossprod(rep(1,n), mu) + tcrossprod(uhat, vhat)
   
+  if( method == "lrpca" ){
+    xhat <- xhat %>% {t(apply(.,1,png.iclr))}
+  }
   
   return(xhat)
 }
@@ -129,7 +147,7 @@ png.gppca_qp <- function(X, nrank=2, maxit=1000, eps=1e-6, kappa=1e-4, gamma=0.5
               kappa=kappa, 
               gamma=gamma)
   
-  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, fit.rank1=fit.rank1, maxit=maxit, time=end-start, params=params, method="gppca_qp"))
+  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, fit.rank1=fit.rank1, maxit=maxit, time=end-start, params=params, method="gppca"))
   
 }
 

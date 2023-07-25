@@ -144,15 +144,15 @@ png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
     Xnew <- X
   }
   
-  X2 <- t(apply(Xnew,1,png.clr))
-  fit <- png.pca(X2, nrank=nrank)
+  Xclr <- t(apply(Xnew,1,png.clr))
+  fit <- png.pca(Xclr, nrank=nrank)
   uhat <- fit$uhat
   vhat <- lapply( seq(-20,20,0.5), function(z){
     z*fit$vhat
   })
   xhat <- fit$xhat %>% {t(apply(.,1,png.iclr))}
   
-  return( list(mu=mu, uhat=uhat, vhat=vhat, logvhat=fit$vhat, xhat=xhat, X=X, Xnew=Xnew) )
+  return( list(mu=mu, uhat=uhat, vhat=vhat, logvhat=fit$vhat, xhat=xhat, X=X, Xnew=Xnew, method="lrpca", zero.replace=zero.replace, delta=delta) )
 }
 
 
@@ -192,7 +192,7 @@ png.ppca <- function(X, nrank=2){
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(uhat,vhat)
   
-  return( list(mu=mu, uhat=uhat, vhat=vhat, xhat=xhat, X=X) )
+  return( list(mu=mu, uhat=uhat, vhat=vhat, xhat=xhat, X=X, method="ppca") )
 }
 
 
@@ -225,7 +225,7 @@ png.gppca <- function(X, nrank=2, V=prcomp(X)$rotation[,1:nrank,drop=F]){
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(uhat, V)
   
-  return( list(mu=mu, uhat=uhat, vhat=V, xhat=xhat, X=X) )
+  return( list(mu=mu, uhat=uhat, vhat=V, xhat=xhat, X=X, method="gppca") )
 }
 
 
@@ -398,7 +398,7 @@ png.ppca_qp <- function(X, nrank=2, maxit=1000, eps=1e-6, kappa=1e-4, gamma=0.5,
               kappa=kappa, 
               gamma=gamma)
   
-  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, maxit=maxit, method="ppca_qp", params=params))
+  return(list(mu=mu, uhat=U_total, vhat=V_total, xhat=xhat, X=X, fit.path=fit.path, maxit=maxit, method="ppca", params=params))
   
 }
 
