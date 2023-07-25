@@ -339,7 +339,7 @@ png.gppca <- function(X, nrank=2, V=prcomp(X)$rotation[,1:nrank,drop=F]){
 
 
 #' @export png.ppca_qp
-png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5, save.est.path=FALSE){
+png.ppca_qp <- function(X, nrank=2, maxit=1000, eps=1e-6, kappa=1e-4, gamma=0.5, save.est.path=FALSE){
   if(FALSE){
     set.seed(2)
     n=100; p=4; r=2

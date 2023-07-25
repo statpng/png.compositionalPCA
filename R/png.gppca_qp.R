@@ -46,7 +46,7 @@ png.projection <- function(X, fit, method=c("ppca_qp", "gppca_qp")){
 
 
 #' @export png.gppca_qp
-png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-4, kappa=1e-6, gamma=0.5, save.est.path=FALSE){
+png.gppca_qp <- function(X, nrank=2, maxit=1000, eps=1e-6, kappa=1e-4, gamma=0.5, save.est.path=FALSE){
   if(FALSE){
     nrank=2; epsilon=1e-4; maxit=100; kappa=1e-8
   }
