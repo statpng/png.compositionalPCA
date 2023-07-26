@@ -132,7 +132,7 @@ png.pca <- function(X, nrank=2){
 #' @export png.lrpca
 png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
   
-  n=nrow(X); p=ncol(X); mu=colMeans(X)
+  n=nrow(X); p=ncol(X); 
   
   if(!is.null(zero.replace)){
     f <- switch(zero.replace, 
@@ -143,6 +143,8 @@ png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
   } else {
     Xnew <- X
   }
+  
+  mu = exp( colMeans( log(Xnew) ) )
   
   Xclr <- t(apply(Xnew,1,png.clr))
   fit <- png.pca(Xclr, nrank=nrank)
