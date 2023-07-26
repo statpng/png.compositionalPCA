@@ -16,6 +16,8 @@ png.ZeroReplace.additive <- function(x, delta=1/2*min(x[x>0])){
   x[x!=0] = x[x!=0] - delta*(Z+1)*Z / D^2
   x[x==0] = delta*(Z+1)*(D-Z) / D^2
   
+  # x[x<0] <- min(x[x>0])
+  
   return(x)
 }
 
