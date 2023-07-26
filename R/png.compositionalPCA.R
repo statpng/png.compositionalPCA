@@ -144,7 +144,7 @@ png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
     Xnew <- X
   }
   
-  mu = exp( colMeans( log(Xnew) ) )
+  mu = png.iclr( colMeans( log(Xnew) ) )
   
   Xclr <- t(apply(Xnew,1,png.clr))
   fit <- png.pca(Xclr, nrank=nrank)
