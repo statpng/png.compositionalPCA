@@ -126,7 +126,7 @@ png.pca.criteria <- function(fit, data, n.test){
 
   data$params["n"] <- n.test
   true <- data %>% { list(Xtrain=.$X2,
-                          Xtest=png.sim.simplex.test(.$params)$X2,
+                          Xtest=sim.simplex.test(.$params)$X2,
                           V=.$V) }
   
   Xtrain=true$Xtrain

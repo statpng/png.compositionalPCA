@@ -104,7 +104,8 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
   V <- qr.Q(qr(cbind(1, do.call("cbind", lapply(1:r, function(x) rnorm(p))) )))[,-1,drop=F]
   
   
-  D <- sapply(1:r, function(k) d/k * (k<=ceiling(r/2)) + d0)
+  # D <- sapply(1:r, function(k) d/k * (k<=ceiling(r/2)) + d0)
+  D <- sapply(1:r, function(k) d/k + d0)
   
   set.seed(seed.U)
   U <- matrix(0,n,r)
@@ -133,7 +134,7 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
   if(verbose) print(paste0("seed=", seed))
   
   
-  params <- c(n=n, p=p, r=r, snr=snr, d=d, d0=d0, seed=seed, seed.U=seed.U, seed.V=seed.V, alpha=alpha, eta=eta)
+  params <- list(n=n, p=p, r=r, snr=snr, d=d, d0=d0, seed=seed, seed.U=seed.U, seed.V=seed.V, alpha=alpha, eta=eta)
   
   result <- list(mu=mu, U=U, D=D, V=V, E=E, X=X, X2=X2, params=params)
   
@@ -144,18 +145,18 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
 
 
 
-#' @export png.sim.simplex.test
-png.sim.simplex.test <- function(params){
+#' @export sim.simplex.test
+sim.simplex.test <- function(params){
   TestData <- params %>% 
-    { sim.simplex(n=.["n"], 
-                  p=.["p"], 
-                  r=.["r"], 
-                  snr=.["snr"], 
-                  d=.["d"],
-                  d0=.["d0"],
-                  seed.U=.["seed.U"]*1234,
-                  seed.V=.["seed.V"],
-                  eta=.["eta"]) }
+    { sim.simplex(n=.[["n"]], 
+                  p=.[["p"]], 
+                  r=.[["r"]], 
+                  snr=.[["snr"]], 
+                  d=.[["d"]],
+                  d0=.[["d0"]],
+                  seed.U=.[["seed.U"]]*123,
+                  seed.V=.[["seed.V"]],
+                  eta=.[["eta"]]) }
   
   TestData
 }

@@ -124,14 +124,14 @@ if(FALSE){
 }
 
 #' @export png.list.replace
-png.list.replace <- function(params, List){
+png.list.replace <- function(params, LIST){
   # list_to_be_replaced
   if(FALSE){
-    List=list(kappa.seq=1e-2, gamma.seq=0.5)
+    LIST=list(kappa.seq=1e-2, gamma.seq=0.5)
   }
   
-  for( i in 1:length(List) ){
-    params[ names(List)[i] ] <- List[[i]]
+  for( i in 1:length(LIST) ){
+    params[ names(LIST)[i] ] <- LIST[[i]]
   }
   params
 }
