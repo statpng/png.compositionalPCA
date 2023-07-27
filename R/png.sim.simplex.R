@@ -123,7 +123,9 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
   E <- matrix(runif(n*p,-delta_snr,delta_snr),n,p) %*% (diag(p) - 1/p*matrix(1,p,p))
   X <- tcrossprod(rep(1,n),mu) + tcrossprod(U,V) + E
   X2 <- t(apply(X, 1, png.proj2simplex))
-  
+  X0 <- (tcrossprod(rep(1,n),mu) + tcrossprod(U,V)) %>% {
+    t(apply(., 1, png.proj2simplex))
+  }
   
   snr_out <- sum(tcrossprod(U,V)^2) / sum(E^2)
   if(verbose) print(paste0("delta=",round(delta_snr,4), "; snr=", round(snr_out,4)))
@@ -136,7 +138,7 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed
   
   params <- list(n=n, p=p, r=r, snr=snr, d=d, d0=d0, seed=seed, seed.U=seed.U, seed.V=seed.V, alpha=alpha, eta=eta)
   
-  result <- list(mu=mu, U=U, D=D, V=V, E=E, X=X, X2=X2, params=params)
+  result <- list(mu=mu, U=U, D=D, V=V, E=E, X0=X0, X=X, X2=X2, params=params)
   
     
   return( result )
