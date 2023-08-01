@@ -164,3 +164,161 @@ png.pca.criteria <- function(fit, data, n.test){
     Convergence=Convergence)
   
 }
+
+
+
+
+
+#' @export png.CompositionalPlot
+png.CompositionalPlot <- function(pseq, xhat=NULL, title="", legend.ncol=10){
+  if(FALSE){
+    pseq <- pseq_list_total_xhat$urine$Phylum
+    xhat <- fit4$xhat
+  }
+  
+  if(!is.null(xhat)){
+    pseq@otu_table <- t(xhat) %>% otu_table(taxa_are_rows = TRUE )
+  }
+  rownames(pseq@otu_table) <- pseq@tax_table[,"unique"]
+  
+  n.taxa <- length(taxa(pseq))
+  # otu.sort <- "abundance"
+  otu.sort <- top_taxa(pseq, n=n.taxa)
+  # otu.sort <- rev(c(rev(names(sort(rowSums(abu)))[seq(1, nrow(abu), 2)]), 
+  # names(sort(rowSums(abu)))[seq(2, nrow(abu), 2)]))
+  
+  TopTaxa <- pseq@tax_table[ top_taxa(pseq, n=1), "unique" ]
+  sample.sort <- rev(sample_names(pseq)[order(abundances(pseq)[TopTaxa, 
+  ])])
+  
+  
+  library(RColorBrewer)
+  # set.seed(1)
+  Taxa_cols = brewer.pal.info[brewer.pal.info$category == 'qual',] %>% { unlist(mapply(brewer.pal, .$maxcolors, rownames(.))) }# %>% sample()
+  
+  
+  abu <- abundances(pseq)
+  dfm <- psmelt(otu_table(abu, taxa_are_rows = TRUE))
+  names(dfm) <- c("Tax", "Sample", "Abundance")
+  
+  dfm$Sample <- factor(dfm$Sample, levels=sample.sort)
+  dfm$Tax <- factor(dfm$Tax, levels=otu.sort)
+  
+  {
+    Tax <- Sample <- Abundance <- NULL
+    dfm <- dfm %>% arrange(Tax)
+    dfm$Tax <- factor(dfm$Tax, levels = unique(dfm$Tax))
+    p <- ggplot(dfm, aes(x=Sample, y=Abundance, fill=Tax)) + 
+      geom_bar(position="stack", stat="identity") + 
+      scale_x_discrete(labels = dfm$xlabel, 
+                       breaks = dfm$Sample)
+    p <- p + labs(y = "Abundance")
+    p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, 
+                                              hjust = 0))
+    p <- p + guides(fill = guide_legend(reverse = FALSE))
+    # if (!is.null(group_by)) {
+    #   p <- p + facet_grid(. ~ Group, drop = TRUE, space = "free", 
+    #                       scales = "free")
+    # }
+    p
+  }
+  
+  
+  
+  p +
+    # scale_fill_manual("", breaks=taxa, values = Taxa_cols, na.value = "black") +
+    scale_fill_manual("", values = Taxa_cols, na.value = "black") +
+    scale_y_continuous(label = scales::percent) +
+    # hrbrthemes::theme_ipsum(grid="Y") +
+    theme_bw(base_size=14) +
+    labs(x = "Samples", y = "Relative Abundance",
+         subtitle = title) +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          legend.position = "bottom") +
+    guides(fill = guide_legend(ncol = legend.ncol))
+  
+}
+
+
+
+
+#' @export png.MultiCompositionalPlot
+png.MultiCompositionalPlot <- function(p.list, title="", legend.ncol=10){
+  if(FALSE){
+    p.list <- list(ppca=p1, gppca=p2, lrpca=p3)
+  }
+  
+  
+  p.names <- names(p.list)
+  data.list <- lapply(p.list, function(x) x$data)
+  
+  
+  TopTaxa.list <- lapply(data.list, function(x) x %>% group_by(Tax) %>% summarise(avg=mean(Abundance)) %>% arrange(desc(avg)) %>% slice_head(n=1) %>% .$Tax)
+  
+  
+  OrderedSample.list <- lapply(1:length(data.list), function(i) data.list[[i]] %>% filter(Tax == TopTaxa.list[[i]]) %>% arrange(desc(Abundance)) %>% .$Sample)
+  
+  tmp <- gtools::mixedsort(as.character(unique(OrderedSample.list[[1]])))
+  sample.order <- lapply(OrderedSample.list, function(y){
+    purrr::map_int( tmp, ~which( y %in% .x ) )
+  }) %>% {Reduce("+", .)/length(.)} %>% order
+  #
+  
+  for( i in 1:length(data.list) ){
+    data.list[[i]]$Sample <- factor(data.list[[i]]$Sample, levels=tmp[sample.order])
+  }
+  
+  
+  dfm <- NULL
+  for(i in 1:length(data.list) ){
+    dfm <- rbind.data.frame(dfm, cbind.data.frame(Type=p.names[i], data.list[[i]]))
+  }
+  
+  
+  n.taxa <- length(unique(p.list[[1]]$data$Tax))
+  TopTaxa <- dfm %>% group_by(Tax) %>% summarise(avg=mean(Abundance)) %>% slice_head(n=n.taxa) %>% .$Tax
+  otu.sort <- TopTaxa
+  
+  
+  library(RColorBrewer)
+  # set.seed(1)
+  Taxa_cols = brewer.pal.info[brewer.pal.info$category == 'qual',] %>% { unlist(mapply(brewer.pal, .$maxcolors, rownames(.))) }# %>% sample()
+  
+  
+  dfm$Type <- factor(dfm$Type, levels=p.names)
+  dfm$Sample <- factor(dfm$Sample, levels=sample.sort)
+  dfm$Tax <- factor(dfm$Tax, levels=otu.sort)
+  
+  {
+    Tax <- Sample <- Abundance <- NULL
+    dfm <- dfm %>% arrange(Tax)
+    dfm$Tax <- factor(dfm$Tax, levels = unique(dfm$Tax))
+    p <- ggplot(dfm, aes(x=Sample, y=Abundance, fill=Tax)) + 
+      geom_bar(position="stack", stat="identity") + 
+      scale_x_discrete(labels = dfm$xlabel, 
+                       breaks = dfm$Sample)
+    p <- p + labs(y = "Abundance")
+    p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, 
+                                              hjust = 0))
+    p <- p + guides(fill = guide_legend(reverse = FALSE))
+    p <- p + facet_grid( Type ~ ., drop = TRUE, space = "free",
+                        scales = "free")
+    
+    p +
+      # scale_fill_manual("", breaks=taxa, values = Taxa_cols, na.value = "black") +
+      scale_fill_manual("", values = Taxa_cols, na.value = "black") +
+      scale_y_continuous(label = scales::percent) +
+      # hrbrthemes::theme_ipsum(grid="Y") +
+      theme_bw(base_size=14) +
+      labs(x = "Samples", y = "Relative Abundance",
+           subtitle = title) +
+      theme(axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),
+            legend.position = "bottom") +
+      guides(fill = guide_legend(ncol = legend.ncol))
+  }
+  
+  
+}
+

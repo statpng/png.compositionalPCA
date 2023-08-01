@@ -70,18 +70,20 @@ png.gppca_qp <- function(X, nrank=2, maxit=1000, eps=1e-6, kappa=1e-4, gamma=0.5
   }
   
   if(FALSE){
+    library(png.compositionalPCA)
     n=150; p=4; r=2;
     seed <- 5
-    data <- sim.simplex2(n=n,p=p,r=r,seed=seed) #1, 5, 10, 17
+    data <- sim.simplex(n=n,p=p,r=r,seed=seed) #1, 5, 10, 17
     X <- data$X2
     
-    fit1 <- png.ppca_qp(X, nrank=2, eps=1e-12)
-    fit2 <- png.gppca_qp(X, nrank=3, maxit=500, gamma=1, kappa=1e-4, eps=1e-12)
+    fit1 <- png.ppca_qp(X, nrank=2, eps=1e-12, kappa=1e-4, maxit=150000)
+    fit1 <- png.ppca_qp(X, nrank=2, eps=1e-12, kappa=1e-4, maxit=150000)
+    fit2 <- png.gppca_qp(X, nrank=2, maxit=10000, gamma=0.1, kappa=1e-2, eps=1e-12)
     
     fit1$fit.path[[2]]$crit.path %>% plot(type="l")
     fit2$fit.path[[2]]$crit.path %>% plot(type="l")
-    fit2$fit.path[[3]]$crit.path %>% plot(type="l")
     
+    #
     
     
     # train
