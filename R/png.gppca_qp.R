@@ -5,7 +5,7 @@ if(FALSE){
 
 
 #' @export png.projection
-png.projection <- function(X, fit, method=c("ppca", "gppca", "lrpca")){
+png.projection <- function(X, fit, method=c("pca","ppca", "gppca", "lrpca")){
   if(FALSE){
     X=Xtrain; method=fit$method
   }
@@ -14,13 +14,20 @@ png.projection <- function(X, fit, method=c("ppca", "gppca", "lrpca")){
   mu=fit$mu
   vhat=fit$vhat
   
-  if( method == "ppca" ){
+  if( method == "pca" ){
+    
+    xhat2 <- (X-tcrossprod(rep(1,n),fit$mu)) %*% tcrossprod(fit$vhat)
+    xhat <- t(apply(xhat2,1,png.proj2simplex))
+    
+    return(xhat)
+    
+  } else if( method == "ppca" ){
     
     uhat <- matrix(0,n,r)
     for( k in 1:r ){
       chat <- tcrossprod(rep(1,n), mu) + tcrossprod(uhat[,1:(k-1)], vhat[,1:(k-1)])
       for( i in 1:n ){
-        uhat[i,k] <- onedimconvexprojection(chat[i,], X[i,], vhat[,k])
+        uhat[i,k] <- onedimconvexprojection(chat[i,], as.vector(X[i,]), vhat[,k])
       }
       # it=fit$fit.path[[k]]$it;  gamma=fit$params$gamma
       # uhat[,k] <- uhat[,k] * (1-gamma/it)
@@ -30,7 +37,7 @@ png.projection <- function(X, fit, method=c("ppca", "gppca", "lrpca")){
     
     uhat <- matrix(0,n,r)
     for( i in 1:n ){
-      uhat[i,] <- multidimconvexprojection(mu, X[i,], vhat)
+      uhat[i,] <- multidimconvexprojection(mu, as.vector(X[i,]), vhat)
     }
     # it=fit$fit.path[[r]]$it;  gamma=fit$params$gamma
     # uhat <- uhat * (1-gamma/it)
@@ -64,7 +71,7 @@ png.projection <- function(X, fit, method=c("ppca", "gppca", "lrpca")){
 
 
 #' @export png.gppca_qp
-png.gppca_qp <- function(X, nrank=2, maxit=1000, eps=1e-6, kappa=1e-4, gamma=0.5, save.est.path=FALSE){
+png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, save.est.path=FALSE){
   if(FALSE){
     nrank=2; epsilon=1e-4; maxit=100; kappa=1e-8
   }

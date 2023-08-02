@@ -125,7 +125,7 @@ png.pca <- function(X, nrank=2){
   vhat <- prcomp(X)$rotation[,1:nrank,drop=F]
   xhat <- tcrossprod(rep(1,n), mu) + tcrossprod(uhat, vhat)
   
-  return( list(mu=mu, uhat=uhat, vhat=vhat, xhat=xhat, X=X) )
+  return( list(mu=mu, uhat=uhat, vhat=vhat, xhat=xhat, X=X, method="pca") )
 }
 
 
