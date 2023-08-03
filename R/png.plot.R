@@ -322,3 +322,28 @@ png.MultiCompositionalPlot <- function(p.list, title="", legend.ncol=10){
   
 }
 
+
+
+
+#' @export png.crit.path
+png.crit.path <- function(fit, remove=NULL){
+  fit.path <- fit$fit.path
+  N <- length(fit.path)
+  
+  par(mfrow=c(N,1), 
+      mai=c(.2,.4,.2,.2), 
+      omi=c(.2,.2,.1,.2))
+  
+  if(is.null(remove)){
+    purrr::map( fit.path, ~{
+      .x$crit.path %>% plot(type="l")
+      .x$crit.path %>% tail
+    } )
+  } else {
+    purrr::map( fit.path, ~{
+      .x$crit.path[-remove] %>% plot(type="l")
+      .x$crit.path %>% tail
+    } )
+  }
+  
+}

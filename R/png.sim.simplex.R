@@ -80,7 +80,7 @@ png.NormalVector <- function(x,v){
 
 
 #' @export sim.simplex
-sim.simplex <- function(n, p, r, snr=2, d=10, d0=0.01, seed=1, seed.U=seed, seed.V=seed, alpha=NULL, eta=0, verbose=FALSE){
+sim.simplex <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.V=seed, alpha=NULL, eta=0, verbose=FALSE){
   # Simulate compositional data
   
   if(FALSE){
