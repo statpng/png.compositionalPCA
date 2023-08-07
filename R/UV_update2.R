@@ -120,7 +120,7 @@ UV_update2 <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, 
     V0 <- (V0.PC + qr.Q(qr(cbind(1,rnorm(ncol(X)))))[,2]*phi) %>% {./norm(.,"2")}
   }
   
-  png.angle(V0.PC, V0)[[1]] %>% print
+  # png.angle(V0.PC, V0)[[1]] %>% print
   
   crit.path <- est.path <- NULL
   for( it in 1:maxit ){

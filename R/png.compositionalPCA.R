@@ -382,7 +382,8 @@ png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, ph
               kappa=kappa, 
               gamma=gamma)
   
-  return(list(mu=mu, uhat=Uhat, vhat=Vhat, xhat=xhat, X=X, fit.path=fit.path, maxit=maxit, method="ppca", params=params))
+  return(list(mu=mu, uhat=Uhat, vhat=Vhat, xhat=xhat, 
+              X=X, fit.path=fit.path, maxit=maxit, method="ppca", params=params))
   
 }
 
@@ -427,7 +428,7 @@ update_UkVk <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0,
     V0 <- (V0.PC + qr.Q(qr(cbind(1,rnorm(ncol(X)))))[,2]*phi) %>% {./norm(.,"2")}
   }
   
-  png.angle(V0.PC, V0)[[1]] %>% print
+  # png.angle(V0.PC, V0)[[1]] %>% print
   
   
   # est.path <- 
