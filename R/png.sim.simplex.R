@@ -112,7 +112,7 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.V=
   for( k in 1:r ){
     v = V[,k];
     start=onedimconvexprojection(mu,-100*v,v); end=onedimconvexprojection(mu,100*v,v)
-    U[,k]=truncnorm::rtruncnorm(n, a=start-eta, b=end+eta, mean=(start+end)/2, sd=D[k])
+    U[,k]=truncnorm::rtruncnorm(n, a=start-eta, b=end+eta, mean=0, sd=D[k])
   }
   
   
@@ -144,6 +144,79 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.V=
   return( result )
   
 }
+
+
+
+
+
+
+#' @export sim.loglinear
+sim.loglinear <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.V=seed, alpha=NULL, verbose=FALSE){
+  # Simulate compositional data
+  
+  if(FALSE){
+    n=100; p=4; r=2; snr=2; d=10; d0=0; seed=1; seed.U=seed; seed.V=seed; alpha=NULL; verbose=FALSE
+  }
+  
+  
+  if(is.null(alpha)){
+    alpha <- rep(10,p)
+  }
+  
+  if(sum(alpha)==1){
+    mu <- alpha
+  } else {
+    set.seed(seed.U)
+    mu <- as.vector(dirmult::rdirichlet(1, alpha=alpha))
+  }
+  
+  
+  set.seed(seed.V)
+  V <- qr.Q(qr(cbind(1, do.call("cbind", lapply(1:r, function(x) rnorm(p))) )))[,-1,drop=F]
+  
+  
+  # D <- sapply(1:r, function(k) d/k * (k<=ceiling(r/2)) + d0)
+  D <- sapply(1:r, function(k) d/k + d0)
+  
+  set.seed(seed.U)
+  U <- matrix(0,n,r)
+  for( k in 1:r ){
+    v = V[,k];
+    U[,k]=rnorm(n, mean=mu, sd=D[k])
+  }
+  
+  
+  delta_snr <- optimize(function(x, mu=mu,U=U,V=V, seed2) norm(calc_snr(delta=x, mu=mu,U=U,V=V, seed1=seed2)-snr, "2"), c(0,1), tol=1e-10, mu=mu,U=U,V=V, seed2=seed.U)$minimum
+  
+  
+  set.seed(seed.U)
+  E <- matrix(runif(n*p,-delta_snr,delta_snr),n,p) %*% (diag(p) - 1/p*matrix(1,p,p))
+  X <- tcrossprod(rep(1,n),mu) + tcrossprod(U,V) + E
+  X2 <- t(apply(X, 1, png.proj2simplex))
+  X0 <- (tcrossprod(rep(1,n),mu) + tcrossprod(U,V)) %>% {
+    t(apply(., 1, png.proj2simplex))
+  }
+  
+  snr_out <- sum(tcrossprod(U,V)^2) / sum(E^2)
+  if(verbose) print(paste0("delta=",round(delta_snr,4), "; snr=", round(snr_out,4)))
+  
+  idx_not_sum_to_unit <- which(apply(X2,1,sum)>0.9999 & apply(X2,1,sum)<1)
+  X2[idx_not_sum_to_unit,] <- t(apply(X2[idx_not_sum_to_unit,,drop=F],1,function(x) x/sum(x)))
+  
+  if(verbose) print(paste0("seed=", seed))
+  
+  
+  params <- list(n=n, p=p, r=r, snr=snr, d=d, d0=d0, seed=seed, seed.U=seed.U, seed.V=seed.V, alpha=alpha, eta=eta)
+  
+  result <- list(mu=mu, U=U, D=D, V=V, E=E, X0=X0, X=X, X2=X2, params=params)
+  
+  
+  return( result )
+  
+}
+
+
+
 
 
 
