@@ -202,7 +202,7 @@ png.rank12 <- function(X, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, phi=0.01, V.
     V0 <- (V0.PC + qr.Q(qr(cbind(1,rnorm(ncol(X)))))[,2]*phi) %>% {./norm(.,"2")}
   }
   
-  png.angle(V0.PC, V0)[[1]] %>% print
+  # png.angle(V0.PC, V0)[[1]] %>% print
   
   
   est.path <- crit.path <- NULL
