@@ -306,7 +306,7 @@ sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.
   
   # mu <- png.iclr(mu)
   
-  result <- list(mu=mu, U=U, D=D, V=V, Vlist=lapply(seq(-20,20,1), function(z) z*V), E=E, X=X, X2=X2, params=params)
+  result <- list(mu=mu, U=U, D=D, V=V, Vlist=lapply(seq(-20,20,1), function(z) z*V), E=E, X0=X02, X=X, X2=X2, params=params)
   
   
   return( result )

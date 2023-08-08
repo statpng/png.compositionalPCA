@@ -93,6 +93,9 @@ Solve_U_SP <- function(x, mu, v, gamma=0){
 
 #' @export Solve_U_GP
 Solve_U_GP <- function(x, mu, V, gamma=0){
+  if(FALSE){
+    x=X[i,]; mu=C[i,]; V=cbind(Vhat, Vk_old); gamma=gamma/(it^(1/2))
+  }
   U <- solve.QP(Dmat=crossprod(V), dvec=t(V) %*% (x - mu), Amat=t(V), bvec=-mu - 1e-8)$solution
   # U <- solve.QP(Dmat=crossprod(V), dvec=t(V) %*% (x - mu), Amat=t(V), bvec=-mu)$solution
   return(U * (1-gamma))
@@ -108,7 +111,7 @@ UV_update2 <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, 
   n=nrow(X); p=ncol(X); r=NCOL(Vhat) + 1
   mu=colMeans(X)
   
-  C <- tcrossprod(rep(1,n), mu) + tcrossprod(Uhat, Vhat)
+  C <- tcrossprod(rep(1,n), mu)
   # C <- tcrossprod(rep(1,n), mu) + X %*% tcrossprod(Vhat)
   
   
@@ -132,8 +135,10 @@ UV_update2 <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, 
       Vk_old <- Vk_new
     }
     
+    
+    
     # U-update
-    Unew <- t(sapply(1:n, function(i) Solve_U_GP(x=X[i,], mu=C[i,], V=cbind(Vhat,Vk_old), gamma=gamma/(it^(1/2)))))
+    Unew <- t(sapply(1:n, function(i) Solve_U_GP(x=X[i,], mu=C[i,], V=cbind(Vhat, Vk_old), gamma=gamma/(it^(1/2)))))
     # V-update
     Vk_new <- V_update2(X, Uhat=Unew[,1:(r-1)], Vhat=Vhat, Uk=Unew[,r], kappa=kappa)
     if( Vk_new[1] == "No solution" ){
@@ -156,7 +161,7 @@ UV_update2 <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, 
   Vnew <- cbind(Vhat, Vk_new)
   
   # U-update for Vnew
-  Unew <- t(sapply(1:n, function(i) Solve_U_GP(x=X[i,], mu=C[i,], V=cbind(Vhat,Vk_new), gamma=0)))
+  Unew <- t(sapply(1:n, function(i) Solve_U_GP(x=X[i,], mu=C[i,], V=Vnew, gamma=0)))
   # Unew <- t(apply(X, 1, function(x) Solve_U_GP(x=x, mu=mu, V=Vnew, gamma=0)))
   
   xhat <- tcrossprod(rep(1,n),mu) + tcrossprod(Unew, Vnew)
