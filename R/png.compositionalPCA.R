@@ -473,3 +473,54 @@ update_UkVk <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0,
   return(result)
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' @export png.fit_all
+png.fit_all <- function(X, nrank){
+  delta1 <- 1e-12
+  delta2 <- 1e-8
+  delta.seq <- c(1e-12, 1e-11, 1e-10, 1e-9, 1e-8)
+  
+  fit1 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=nrank, zero.replace="simple", delta=.x))
+  # fit2 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=r, zero.replace="additive", delta=.x))
+  fit2 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=nrank, zero.replace="multiplicative", delta=.x))
+  
+  # names(fit1) <- paste0("simple(", seq_len(length(delta.seq)), ")")
+  names(fit1) <- paste0("simple(", format(delta.seq,digits=2), ")")
+  # names(fit2) <- paste0("multiplicative(", seq_len(length(delta.seq)), ")")
+  names(fit2) <- paste0("multiplicative(", format(delta.seq,digits=2), ")")
+  # names(fit3) <- paste0("additive_", format(delta.seq,digits=2) )
+  
+  fit3 <- png.ppca(X, nrank=nrank)
+  fit4 <- png.gppca(X, nrank=nrank)
+  
+  gamma.seq <- c(10^(-seq(1, 7, 2)), 0)
+  fit5 <- purrr::map(gamma.seq, ~try(png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC")))
+  fit6 <- purrr::map(gamma.seq, ~try(png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC")))
+  
+  names(fit5) <- paste0("ppca_qp_", format(gamma.seq, digits=2) )
+  names(fit6) <- paste0("gppca_qp_", format(gamma.seq, digits=2) )
+  
+  # fit5 %>% sapply(function(fit){
+  #   sqrt(mean((data$X0 - fit$xhat)^2))
+  # })
+  # fit6 %>% sapply(function(fit){
+  #   sqrt(mean((data$X0 - fit$xhat)^2))
+  # })
+  # fit6[[3]] %>% png.crit.path()
+  
+  fit.list <- list(fit1,fit2,list(ppca=fit3),list(gppca=fit4),fit5,fit6) %>% Reduce(append, .)
+  fit.list
+}

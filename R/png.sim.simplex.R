@@ -244,7 +244,6 @@ sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.
     
   }
   
-  snr <- exp(snr)
   
   mu <- rep(0,p)
   
