@@ -237,6 +237,7 @@ png.rank12 <- function(X, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, phi=0.01, V.
   loss <- sqrt(mean((X - xhat)^2))
   
   # return( list(xhat=xhat, uhat=Unew, vhat=Vnew, it=it, crit.path=crit.path, est.path=est.path) )
-  return( list(xhat=xhat, uhat=Unew, vhat=Vnew, it=it, crit.path=crit.path, loss=loss) )
+  return( list(# xhat=xhat, 
+               mu=mu, uhat=Unew, vhat=Vnew, it=it, crit.path=crit.path, loss=loss) )
   
 }

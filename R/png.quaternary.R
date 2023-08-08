@@ -19,7 +19,7 @@ simplex <- function(n) {
 
 
 #' @export png.quaternary
-png.quaternary <- function(X, vhat=NULL, xhat=NULL, xhat.col="darkred", cex=0.5, theta = 675, phi=-15, print.surface=TRUE, alpha=0.05, n.grid=100, use.par=FALSE){
+png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred", cex=0.5, theta = 675, phi=-15, print.surface=TRUE, alpha=0.05, n.grid=100, use.par=FALSE){
   if(FALSE){
     vhat=NULL; xhat=NULL; xhat.col="darkred"; cex=0.5; theta = 675; phi=-15; print.surface=TRUE; alpha=0.05; n.grid=100
     cex=0.5;  theta = 675;  phi=-15
@@ -37,7 +37,7 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, xhat.col="darkred", cex=0.5,
   }
   df3D <- bary2cart(tetra, X)
   vertex <- bary2cart(tetra, diag(1,4,4))
-  mu <- colMeans(X)
+  
   
   
   
@@ -66,12 +66,16 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, xhat.col="darkred", cex=0.5,
   if(!is.null(vhat)){
     if(is.list(vhat)){
       
+      if(is.null(mu)){
+        mu <- png.iclr(colMeans(log(X)))
+      }
+      
       for( jj in 1:NCOL(vhat[[1]]) ){
         for( ii in 1:(length(vhat)-1) ){
           vhat.i1 = vhat[[ii]][,jj]
           vhat.i2 = vhat[[ii+1]][,jj]
-          vhat.start <- png.iclr( colMeans(log(X))+vhat.i1 )
-          vhat.end <- png.iclr( colMeans(log(X))+vhat.i2 )
+          vhat.start <- png.iclr( mu+vhat.i1 )
+          vhat.end <- png.iclr( mu+vhat.i2 )
           
           dir.xyz <- rbind(vhat.start, vhat.end) %>% bary2cart(tetra, .)
           
@@ -84,6 +88,9 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, xhat.col="darkred", cex=0.5,
       
     } else {
       
+      if(is.null(mu)){
+        mu <- colMeans(X)
+      }
       
       dir <- png.loading2StartEnd(mu, vhat)
       
@@ -165,9 +172,10 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, xhat.col="darkred", cex=0.5,
 
 
 #' @export png.quaternary3d
-png.quaternary3d <- function(X, vhat=NULL, xhat=NULL, xhat.size=2, size = 2, print.surface=TRUE, ...) {
+png.quaternary3d <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.size=2, size = 2, print.surface=TRUE, ...) {
   if(FALSE){
-    vhat=NULL; xhat=NULL; xhat.size=2; size = 2; print.surface=TRUE; ...=NULL
+    vhat=NULL; xhat=NULL; mu=NULL;
+    xhat.size=2; size = 2; print.surface=TRUE; ...=NULL
     size=2; ...=NULL
   }
   
@@ -175,7 +183,7 @@ png.quaternary3d <- function(X, vhat=NULL, xhat=NULL, xhat.size=2, size = 2, pri
   library(dplyr)
   library(geometry)
   
-  mu <- colMeans(X)
+  
   tetra <- simplex(4)
   
   df <- bary2cart(tetra, X)
@@ -200,13 +208,16 @@ png.quaternary3d <- function(X, vhat=NULL, xhat=NULL, xhat.size=2, size = 2, pri
   
   if(!is.null(vhat)){
     if(is.list(vhat)){
+      if(is.null(mu)){
+        mu <- png.iclr(colMeans(log(X)))
+      }
       
       for( jj in 1:NCOL(vhat[[1]]) ){
         for( ii in 1:(length(vhat)-1) ){
           vhat.i1 = vhat[[ii]][,jj]
           vhat.i2 = vhat[[ii+1]][,jj]
-          vhat.start <- png.iclr( colMeans(log(X))+vhat.i1 )
-          vhat.end <- png.iclr( colMeans(log(X))+vhat.i2 )
+          vhat.start <- png.iclr( mu+vhat.i1 )
+          vhat.end <- png.iclr( mu+vhat.i2 )
           
           dir.xyz <- rbind(vhat.start, vhat.end) %>% bary2cart(tetra, .)
           
@@ -222,6 +233,10 @@ png.quaternary3d <- function(X, vhat=NULL, xhat=NULL, xhat.size=2, size = 2, pri
       }
       
     } else {
+      
+      if(is.null(mu)){
+        mu <- colMeans(X)
+      }
       
       dir <- png.loading2StartEnd(mu, vhat)
       
