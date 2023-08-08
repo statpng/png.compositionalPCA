@@ -273,7 +273,7 @@ sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.
   X02 <- t(apply(X0,1,function(x) exp(x)/sum(exp(x))))
   #
   mu0 <- png.iclr(mu)
-  delta_snr <- optimize(function(x, mu=mu,U=U,V=V, seed2) norm(calc_snr2(delta=x, mu=mu0, X0=X02, seed1=seed2)-snr, "2"), c(0,1), tol=1e-10, mu=mu,U=U,V=V, seed2=seed.U)$minimum
+  delta_snr <- optimize(function(x, mu=mu,U=U,V=V, seed2) norm(calc_snr2(delta=x, mu=mu0, X0=X02, seed1=seed2)-exp(snr), "2"), c(0,1), tol=1e-10, mu=mu,U=U,V=V, seed2=seed.U)$minimum
   #
   set.seed(seed.U)
   E <- matrix(runif(n*p,-delta_snr,delta_snr),n,p) %*% (diag(p) - 1/p*matrix(1,p,p))
@@ -311,6 +311,23 @@ sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.
   
   return( result )
   
+}
+
+
+
+#' @export sim.LogNormal.test
+sim.LogNormal.test <- function(params){
+  TestData <- params %>% 
+    { sim.LogNormal(n=.[["n"]], 
+                    p=.[["p"]], 
+                    r=.[["r"]], 
+                    snr=.[["snr"]], 
+                    d=.[["d"]],
+                    d0=.[["d0"]],
+                    seed.U=.[["seed.U"]]*123,
+                    seed.V=.[["seed.V"]] ) }
+  
+  TestData
 }
 
 
