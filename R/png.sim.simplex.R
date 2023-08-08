@@ -195,6 +195,29 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.V=
 
 
 
+#' @export sim.simplex.test
+sim.simplex.test <- function(params){
+  TestData <- params %>% 
+    { sim.simplex(n=.[["n"]], 
+                  p=.[["p"]], 
+                  r=.[["r"]], 
+                  snr=.[["snr"]], 
+                  d=.[["d"]],
+                  d0=.[["d0"]],
+                  seed.U=.[["seed.U"]]*123,
+                  seed.V=.[["seed.V"]],
+                  alpha=.[["alpha"]],
+                  eta=.[["eta"]]) }
+  
+  TestData
+}
+
+
+
+
+
+
+
 #' @export sim.LogNormal
 sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.V=seed, verbose=FALSE){
   # Simulate compositional data
@@ -267,7 +290,7 @@ sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.
   }
   
   U[UZ==0] <- 20*sign(U[UZ==0])
-  print(mean(UZ==0))
+  # print(mean(UZ==0))
   X0 <- tcrossprod(rep(1,n),mu) + tcrossprod(U,V)
   X02 <- t(apply(X0,1,function(x) exp(x)/sum(exp(x))))
   #
@@ -333,22 +356,6 @@ sim.LogNormal.test <- function(params){
 
 
 
-
-#' @export sim.simplex.test
-sim.simplex.test <- function(params){
-  TestData <- params %>% 
-    { sim.simplex(n=.[["n"]], 
-                  p=.[["p"]], 
-                  r=.[["r"]], 
-                  snr=.[["snr"]], 
-                  d=.[["d"]],
-                  d0=.[["d0"]],
-                  seed.U=.[["seed.U"]]*123,
-                  seed.V=.[["seed.V"]],
-                  eta=.[["eta"]]) }
-  
-  TestData
-}
 
 
 
