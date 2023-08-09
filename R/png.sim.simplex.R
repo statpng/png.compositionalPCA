@@ -283,10 +283,8 @@ sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.
   }
   
   UZ <- matrix(0,n,r)
-  for(i in 1:n){
-    for(k in 1:r){
-      UZ[i,k] <- rbinom(1, size=1, prob=exp(-0.01*U^2)[i,k])
-    }
+  for(k in 1:r){
+    UZ[,k] <- rbinom(n, size=n, prob=exp(-0.01*U^2)[,k])
   }
   
   U[UZ==0] <- 20*sign(U[UZ==0])
@@ -295,7 +293,7 @@ sim.LogNormal <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.
   X02 <- t(apply(X0,1,function(x) exp(x)/sum(exp(x))))
   #
   mu0 <- png.iclr(mu)
-  delta_snr <- optimize(function(x, mu=mu,U=U,V=V, seed2) norm(calc_snr2(delta=x, mu=mu0, X0=X02, seed1=seed2)-exp(snr), "2"), c(0,1), tol=1e-10, mu=mu,U=U,V=V, seed2=seed.U)$minimum
+  delta_snr <- optimize(function(x, mu=mu,U=U,V=V, seed2) sqrt(mean((calc_snr2(delta=x, mu=mu0, X0=X02, seed1=seed2)-exp(snr))^2)), c(0,1), tol=1e-4, mu=mu,U=U,V=V, seed2=seed.U)$minimum
   #
   set.seed(seed.U)
   E <- matrix(runif(n*p,-delta_snr,delta_snr),n,p) %*% (diag(p) - 1/p*matrix(1,p,p))

@@ -524,3 +524,33 @@ png.fit_all <- function(X, nrank){
   fit.list <- list(fit1,fit2,list(ppca=fit3),list(gppca=fit4),fit5,fit6) %>% Reduce(append, .)
   fit.list
 }
+
+
+
+
+
+
+
+#' @export png.pca.rmse
+png.pca.rmse <- function(fit.list, data, n.test="10x"){
+  X0=data$X0
+  params=data$params
+  
+  if(n.test == "10x"){
+    params_test <- png.list.replace(params, list(n=10*params[["n"]]))
+  } else {
+    params_test <- png.list.replace(params, list(n=n.test))
+  }
+  
+  Xtest <- sim.LogNormal.test(params_test)$X2
+  
+  rmse.list <- try(sapply(fit.list, function(fit){
+    sqrt(mean((X0 - fit$xhat)^2))
+  }))
+  rmspe.list <- try(sapply(fit.list, function(fit){
+    xhat_test <- png.projection(Xtest, fit, method=fit$method)
+    sqrt(mean((Xtest - xhat_test)^2))
+  }))
+  
+  cbind(rmse=rmse.list, rmspe=rmspe.list)
+}

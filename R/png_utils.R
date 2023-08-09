@@ -179,3 +179,24 @@ png.loading2StartEnd <- function(mu,vhat){
   }
   dir_list
 }
+
+
+
+
+
+
+
+
+
+
+#' @export png.cpca.conv
+png.cpca.conv <- function(LIST, eps=1e-6, accept0.1=FALSE){
+  conv.list <- LIST %>% purrr::map(function(.x){
+    out <- try(purrr::map_dbl(.x$fit.path, function(.y){
+      .y$crit.path %>% tail(1) %>% {.<=eps | .==0.1}
+    }))
+  })
+  out <- do.call("rbind",conv.list)
+  colnames(out) <- paste0("rank=",1:ncol(out))
+  out
+}
