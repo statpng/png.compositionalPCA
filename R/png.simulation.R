@@ -62,9 +62,6 @@ sim01_convergence <- function(n, p, r, snr, eta, kappa, gamma, seed){
 }
 
 
-
-
-
 #' @export sim02_kappa_gamma
 sim02_kappa_gamma <- function(n, p, r, snr, eta, kappa=1e-2, gamma=0.5, seed){
   if(FALSE){
@@ -89,39 +86,6 @@ sim02_kappa_gamma <- function(n, p, r, snr, eta, kappa=1e-2, gamma=0.5, seed){
   list(ppca=res1, gppca=res2)
 }
 
-
-if(FALSE){
-  
-  tmp <- function(n,seed=1){
-    r=2; kappa=1e-4; gamma=1e-1
-    data <- sim.simplex(n=n,p=4,r=r,snr=2,d=10,d0=0.01,seed=seed,eta=0/log(p))
-    X <- data$X2
-    
-    fit_ppca <- try(png.ppca_qp(X, nrank=r, kappa=kappa, maxit=500, eps=1e-6, gamma=gamma))
-    fit_gppca <- try(png.gppca_qp(X, nrank=r, kappa=kappa, maxit=500, eps=1e-6, gamma=gamma))
-    res1 <- try(png.pca.criteria(fit_ppca, data, n.test=n*10))
-    res2 <- try(png.pca.criteria(fit_gppca, data, n.test=n*10))
-    
-    list(data=data,fit_ppca=fit_ppca,fit_gppca=fit_gppca,
-         res1=res1,res2=res2)
-  }
-  
-  tmp1 <- tmp(n=200,seed=2)
-  tmp2 <- tmp(n=500,seed=2)
-  
-  tmp1$res2
-  tmp2$res2
-    
-  png.quaternary3d(tmp1$data$X2, 
-                   vhat=tmp1$fit_gppca$vhat, 
-                   xhat=tmp1$fit_gppca$xhat)
-  
-  png.quaternary3d(tmp2$data$X2, vhat=tmp2$data$V)
-  
-  tmp1$data$V
-  tmp2$data$V
-  
-}
 
 #' @export png.list.replace
 png.list.replace <- function(params, LIST){
@@ -200,7 +164,7 @@ run.sim <- function(f.sim, params){
 
 
 
-
+#' @export res.reshape
 res.reshape <- function(res1, param.list, type="data.frame"){
   # Reshape the res1 to a matrix form
   
@@ -225,6 +189,7 @@ res.reshape <- function(res1, param.list, type="data.frame"){
 }
 
 
+#' @export png.dflist2array
 png.dflist2array <- function(df){
   N=nrow(df); P=ncol(df)
   out.array <- array(NA, dim=c(length(df[1,1][[1]]), nrow(df), ncol(df)))

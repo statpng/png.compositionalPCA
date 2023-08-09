@@ -1,18 +1,5 @@
-# if(FALSE){
-#   n=150; p=4; r=3;
-#   seed <- 2
-#   X <- sim.simplex2(n=n,p=p,r=r,snr=4,d=10,d0=0.1,seed=seed)$X2
-#   
-#   fit=png.gppca_qp(X,2,kappa=1e-12)
-#   png.quaternary(X, vhat=fit$vhat, xhat=fit$xhat, n.grid=100)
-#   png.quaternary3d(X, vhat=fit$vhat, xhat=fit$xhat, print.surface=TRUE)
-#   
-# }
-
-
-
-#' @export simplex
-simplex <- function(n) {
+#' @export tmp.simplex
+tmp.simplex <- function(n) {
   qr.Q(qr(matrix(1, nrow=n)) ,complete = TRUE)[,-1]
 }
 
@@ -27,17 +14,14 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred",
   
   library(geometry)
   
-  
-  
   # Compute tetrahedron coordinates according to https://mathoverflow.net/a/184585
-  tetra <- simplex(4)
+  tetra <- tmp.simplex(4)
   
   if( is.null(colnames(X)) ){
     colnames(X) <- LETTERS[1:4]
   }
   df3D <- bary2cart(tetra, X)
   vertex <- bary2cart(tetra, diag(1,4,4))
-  
   
   
   
@@ -184,7 +168,7 @@ png.quaternary3d <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.size=2, size
   library(geometry)
   
   
-  tetra <- simplex(4)
+  tetra <- tmp.simplex(4)
   
   df <- bary2cart(tetra, X)
   colnames(df) <- c("x", "y", "z")
