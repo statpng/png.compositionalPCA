@@ -210,7 +210,7 @@ png.gppca <- function(X, nrank=2, V=prcomp(X)$rotation[,1:nrank,drop=F]){
 
 
 #' @export png.fit_all
-png.fit_all <- function(X, nrank){
+png.fit_all <- function(X, nrank, ...){
   delta1 <- 1e-12
   delta2 <- 1e-8
   delta.seq <- c(1e-12, 1e-11, 1e-10, 1e-9, 1e-8)
@@ -229,8 +229,8 @@ png.fit_all <- function(X, nrank){
   fit4 <- png.gppca(X, nrank=nrank)
   
   gamma.seq <- c(10^(-seq(1, 7, 2)), 0)
-  fit5 <- purrr::map(gamma.seq, ~try(png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC")))
-  fit6 <- purrr::map(gamma.seq, ~try(png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC")))
+  fit5 <- purrr::map(gamma.seq, ~png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC", ...))
+  fit6 <- purrr::map(gamma.seq, ~png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC", ...))
   
   names(fit5) <- paste0("ppca_qp_", format(gamma.seq, digits=2) )
   names(fit6) <- paste0("gppca_qp_", format(gamma.seq, digits=2) )
@@ -283,7 +283,7 @@ png.pca.rmse <- function(fit.list, data, n.test="10x"){
 
 
 #' @export png.fit_all.cv
-png.fit_all.cv <- function(X, nfold=5, nrank=5){
+png.fit_all.cv <- function(X, nfold=5, nrank=5, ...){
   set.seed(123);  # nfold=nrow(X)
   foldid <- sample( rep(1:nfold, length=nrow(X)) )
   
@@ -292,7 +292,7 @@ png.fit_all.cv <- function(X, nfold=5, nrank=5){
     cat(i, " / ", nfold, "\n")
     X.train <- X[foldid != i,]
     if(FALSE) X=X.train; nrank=nrank
-    fit.list[[i]] <- png.fit_all(X=X.train, nrank=nrank)
+    fit.list[[i]] <- try(png.fit_all(X=X.train, nrank=nrank, ...))
   }
   return(list(fit.list=fit.list, foldid=foldid))
 }
