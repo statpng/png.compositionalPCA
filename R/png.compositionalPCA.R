@@ -276,3 +276,23 @@ png.pca.rmse <- function(fit.list, data, n.test="10x"){
   
   cbind(rmse=rmse.list, rmspe=rmspe.list)
 }
+
+
+
+
+
+
+#' @export png.fit_all.cv
+png.fit_all.cv <- function(X, nfold=5, nrank=5){
+  set.seed(123);  # nfold=nrow(X)
+  foldid <- sample( rep(1:nfold, length=nrow(X)) )
+  
+  fit.list <- NULL
+  for( i in 1:nfold ){
+    cat(i, " / ", nfold, "\n")
+    X.train <- X[foldid != i,]
+    if(FALSE) X=X.train; nrank=nrank
+    fit.list[[i]] <- png.fit_all(X=X.train, nrank=nrank)
+  }
+  return(list(fit.list=fit.list, foldid=foldid))
+}
