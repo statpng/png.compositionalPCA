@@ -96,6 +96,10 @@ Solve_U_GP <- function(x, mu, V, gamma=0){
   if(FALSE){
     x=X[i,]; mu=C[i,]; V=cbind(Vhat, Vk_old); gamma=gamma/(it^(1/2))
   }
+  
+  x=as.numeric(x)
+  mu=as.numeric(mu)
+  
   U <- solve.QP(Dmat=crossprod(V), dvec=t(V) %*% (x - mu), Amat=t(V), bvec=-mu - 1e-8)$solution
   # U <- solve.QP(Dmat=crossprod(V), dvec=t(V) %*% (x - mu), Amat=t(V), bvec=-mu)$solution
   return(U * (1-gamma))
