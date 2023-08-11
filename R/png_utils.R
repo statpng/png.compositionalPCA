@@ -221,11 +221,21 @@ png.pca.reconstruction <- function(fit, nrank){
 
 #' @export png.cpca.conv
 png.cpca.conv <- function(LIST, eps=1e-6, accept0.1=FALSE){
-  conv.list <- LIST %>% purrr::map(function(.x){
-    out <- try(purrr::map_dbl(.x$fit.path, function(.y){
-      .y$crit.path %>% tail(1) %>% {.<=eps | .==0.1}
-    }))
-  })
+  
+  if( accept0.1 ){
+    conv.list <- LIST %>% purrr::map(function(.x){
+      out <- try(purrr::map_dbl(.x$fit.path, function(.y){
+        .y$crit.path %>% tail(1) %>% {.<=eps | .==0.1}
+      }))
+    })
+  } else {
+    conv.list <- LIST %>% purrr::map(function(.x){
+      out <- try(purrr::map_dbl(.x$fit.path, function(.y){
+        .y$crit.path %>% tail(1) %>% {.<=eps}
+      }))
+    })
+  }
+  
   out <- do.call("rbind",conv.list)
   colnames(out) <- paste0("rank=",1:ncol(out))
   out
