@@ -1,8 +1,8 @@
 
 #' @export png.ppca_qp
-png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-6, kappa=1e-8, gamma=1e-2, phi=0.01, V.init=c("PC","random"), verbose=FALSE){
+png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-8, kappa=1e-8, gamma=1e-2, phi=0.01, V.init=c("PC","random"), verbose=FALSE){
   if(FALSE){
-    X; nrank=2; maxit=500; eps=1e-6; kappa=1e-8; gamma=1e-2; phi=0.01; V.init=c("PC","random"); verbose=FALSE
+    X; nrank=2; maxit=500; eps=1e-8; kappa=1e-8; gamma=1e-2; phi=0.01; V.init=c("PC","random"); verbose=FALSE
   }
   
   library(quadprog)
@@ -62,7 +62,7 @@ png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-6, kappa=1e-8, gamma=1e-2,
 
 
 #' @export update_UkVk
-update_UkVk <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, phi=0.01, V.init=c("PC","random"), verbose=TRUE){
+update_UkVk <- function(X, Uhat, Vhat, maxit=500, eps=1e-8, kappa=1e-4, gamma=0, phi=0.01, V.init=c("PC","random"), verbose=TRUE){
   
   require(quadprog)
   
@@ -103,7 +103,7 @@ update_UkVk <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0,
     }
     
     # est.path[[it]] <- list(uhat=cbind(Uhat, Unew), vhat=cbind(Vhat, Vnew))
-    crit.path[it] <- min( sqrt(mean((Vnew-Vold)^2)), sqrt(mean((Vnew+Vold)^2)) )
+    crit.path[it] <- min( sum((Vnew-Vold)^2), sum((Vnew+Vold)^2) )
     
     if( crit.path[it] < eps ) break
     
@@ -116,7 +116,7 @@ update_UkVk <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0,
   
   xhat <- C + tcrossprod(Unew,Vnew)
   
-  loss <- sqrt(mean((X - xhat)^2))
+  loss <- mean(rowSums((X - xhat)^2))
   
   # result <- list(uhat=Unew, vhat=Vnew, it=it, crit.path=crit.path, est.path=est.path)
   result <- list(xhat=xhat, uhat=Unew, vhat=Vnew, it=it, crit.path=crit.path, loss=loss)

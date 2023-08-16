@@ -51,7 +51,7 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred",
     if(is.list(vhat)){
       
       if(is.null(mu)){
-        mu <- png.iclr(colMeans(log(X)))
+        mu <- (colMeans(log(X)))
       }
       
       for( jj in 1:NCOL(vhat[[1]]) ){
@@ -193,7 +193,7 @@ png.quaternary3d <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.size=2, size
   if(!is.null(vhat)){
     if(is.list(vhat)){
       if(is.null(mu)){
-        mu <- png.iclr(colMeans(log(X)))
+        mu <- (colMeans(log(X)))
       }
       
       for( jj in 1:NCOL(vhat[[1]]) ){

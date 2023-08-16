@@ -170,7 +170,7 @@ png.pca.criteria <- function(fit, data, n.test){
 
 
 #' @export png.CompositionalPlot
-png.CompositionalPlot <- function(pseq, xhat=NULL, title="", legend.ncol=10){
+png.CompositionalPlot <- function(pseq, xhat=NULL, uhat=NULL, title="", df.color=NULL, legend.ncol=10){
   if(FALSE){
     pseq <- pseq_list_total_xhat$urine$Phylum
     xhat <- fit4$xhat
@@ -187,14 +187,38 @@ png.CompositionalPlot <- function(pseq, xhat=NULL, title="", legend.ncol=10){
   # otu.sort <- rev(c(rev(names(sort(rowSums(abu)))[seq(1, nrow(abu), 2)]), 
   # names(sort(rowSums(abu)))[seq(2, nrow(abu), 2)]))
   
-  TopTaxa <- pseq@tax_table[ top_taxa(pseq, n=1), "unique" ]
-  sample.sort <- rev(sample_names(pseq)[order(abundances(pseq)[TopTaxa, 
-  ])])
+  
+  if(is.null(uhat)){
+    TopTaxa <- pseq@tax_table[ top_taxa(pseq, n=1), "unique" ]
+    sample.sort <- rev(sample_names(pseq)[order(abundances(pseq)[TopTaxa, 
+    ])])
+  } else {
+    sample.sort <- rev(sample_names(pseq)[order(uhat)])
+  }
+  
   
   
   library(RColorBrewer)
   # set.seed(1)
-  Taxa_cols = brewer.pal.info[brewer.pal.info$category == 'qual',] %>% { unlist(mapply(brewer.pal, .$maxcolors, rownames(.))) }# %>% sample()
+  Taxa_cols = brewer.pal.info[brewer.pal.info$category == 'qual',] %>% 
+    # {.[c("Set1","Pastel1","Dark2","Set3"),]} %>% 
+    {.[c("Set1","Set3","Pastel1","Dark2","Pastel2", "Set2", "Accent"),]} %>%
+    { unlist(mapply(brewer.pal, .$maxcolors, rownames(.))) }
+  
+  # top_taxa(pseq, n=n.taxa)
+  # 
+  # adjustcolor( "red", alpha.f = 0.2)
+  
+  # remotes::install_github("KarstensLab/microshades")
+  # library(microshades)
+  # microshades::create_color_dfs()
+  # microshades_palettes
+  # library(randomcoloR)
+  # set.seed(1)
+  # Taxa_cols <- distinctColorPalette(k=n.taxa)
+  
+  
+  
   
   
   abu <- abundances(pseq)
@@ -220,23 +244,40 @@ png.CompositionalPlot <- function(pseq, xhat=NULL, title="", legend.ncol=10){
     #   p <- p + facet_grid(. ~ Group, drop = TRUE, space = "free", 
     #                       scales = "free")
     # }
-    p
   }
   
   
   
-  p +
-    # scale_fill_manual("", breaks=taxa, values = Taxa_cols, na.value = "black") +
-    scale_fill_manual("", values = Taxa_cols, na.value = "black") +
-    scale_y_continuous(label = scales::percent) +
-    # hrbrthemes::theme_ipsum(grid="Y") +
-    theme_bw(base_size=14) +
-    labs(x = "Samples", y = "Relative Abundance",
-         subtitle = title) +
-    theme(axis.text.x=element_blank(),
-          axis.ticks.x=element_blank(),
-          legend.position = "bottom") +
-    guides(fill = guide_legend(ncol = legend.ncol))
+  if( is.null(df.color) ){
+    p +
+      # scale_fill_manual("", breaks=taxa, values = Taxa_cols, na.value = "black") +
+      scale_fill_manual("", values = Taxa_cols, na.value = "black") +
+      # scale_fill_manual("", values = df.color$Color, breaks=df.color$Tax, na.value = "black") +
+      scale_y_continuous(label = scales::percent) +
+      # hrbrthemes::theme_ipsum(grid="Y") +
+      theme_bw(base_size=14) +
+      labs(x = "Samples", y = "Relative Abundance",
+           subtitle = title) +
+      theme(axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),
+            legend.position = "bottom") +
+      guides(fill = guide_legend(ncol = legend.ncol))
+  } else {
+    p +
+      # scale_fill_manual("", breaks=taxa, values = Taxa_cols, na.value = "black") +
+      # scale_fill_manual("", values = Taxa_cols, na.value = "black") +
+      scale_fill_manual("", values = df.color$Color, breaks=df.color$Tax, na.value = "black") +
+      scale_y_continuous(label = scales::percent) +
+      # hrbrthemes::theme_ipsum(grid="Y") +
+      theme_bw(base_size=14) +
+      labs(x = "Samples", y = "Relative Abundance",
+           subtitle = title) +
+      theme(axis.text.x=element_blank(),
+            axis.ticks.x=element_blank(),
+            legend.position = "bottom") +
+      guides(fill = guide_legend(ncol = legend.ncol))
+  }
+  
   
 }
 
@@ -322,6 +363,51 @@ png.MultiCompositionalPlot <- function(p.list, title="", legend.ncol=10){
   
 }
 
+
+
+#' @export png.CheckComposition
+png.CheckComposition <- function(X){
+  if(FALSE){
+    n=10; p=500
+    set.seed(2)
+    
+    X <- matrix(runif(n*p,0,1),n,p) %>% {t(apply(.,1,function(x)x/sum(x)))}
+    X <- png.pca(X,nrank=1)$xhat
+    sum(Xhat>1|Xhat<0)
+  }
+  
+  wh <- t( apply(X,1,function(x) {
+    a=(abs(sum(x)-1)>1e-4)
+    b=any(x<0-1e-8)
+    c=any(x>1+1e-8)
+    c(a,b,c)
+  }) )
+  
+  out <- apply(wh,2,which)
+  
+  if(length(out)==0){
+    return(list(`=1`=NA,
+                `<0`=NA, 
+                `>1`=NA, 
+                any=NA))
+  }
+  names(out) <- c("=1", "<0", ">1")
+  out$any <- unique( unlist(out) )
+  out
+}
+
+#' @export png.CompositionalViolation
+png.CompositionalViolation <- function(X){
+  if(FALSE){
+    n=10; p=100
+    X <- matrix(runif(n*p,0,1),n,p)
+  }
+  
+  png.CheckComposition( png.pca(X)$xhat )
+  
+  X
+  
+}
 
 
 

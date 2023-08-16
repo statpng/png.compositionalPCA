@@ -130,7 +130,7 @@ png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
   })
   xhat <- fit$xhat %>% {t(apply(.,1,png.iclr))}
   
-  return( list(mu=mu, uhat=uhat, vhat=vhat, logvhat=fit$vhat, xhat=xhat, X=X, Xnew=Xnew, method="lrpca", zero.replace=zero.replace, delta=delta) )
+  return( list(mu=mu, uhat=uhat, vhat=vhat, logmu=colMeans( log(Xnew) ), logvhat=fit$vhat, xhat=xhat, X=X, Xnew=Xnew, method="lrpca", zero.replace=zero.replace, delta=delta) )
 }
 
 
@@ -213,7 +213,8 @@ png.gppca <- function(X, nrank=2, V=prcomp(X)$rotation[,1:nrank,drop=F]){
 png.fit_all <- function(X, nrank, ...){
   delta1 <- 1e-12
   delta2 <- 1e-8
-  delta.seq <- c(1e-12, 1e-11, 1e-10, 1e-9, 1e-8)
+  delta.seq <- c(1e-12, 1e-11, 1e-10, 1e-9, 1e-8,
+                 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
   
   fit1 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=nrank, zero.replace="simple", delta=.x))
   # fit2 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=r, zero.replace="additive", delta=.x))
@@ -229,8 +230,8 @@ png.fit_all <- function(X, nrank, ...){
   fit4 <- png.gppca(X, nrank=nrank)
   
   gamma.seq <- c(10^(-seq(1, 7, 2)), 0)
-  fit5 <- purrr::map(gamma.seq, ~png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC", ...))
-  fit6 <- purrr::map(gamma.seq, ~png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-6, maxit=500, V.init="PC", ...))
+  fit5 <- purrr::map(gamma.seq, ~png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...))
+  fit6 <- purrr::map(gamma.seq, ~png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...))
   
   names(fit5) <- paste0("ppca_qp_", format(gamma.seq, digits=2) )
   names(fit6) <- paste0("gppca_qp_", format(gamma.seq, digits=2) )
@@ -267,10 +268,12 @@ png.pca.rmse <- function(fit.list, data, n.test="10x"){
   Xtest <- sim.LogNormal.test(params_test)$X2
   
   rmse.list <- try(sapply(fit.list, function(fit){
+    # mean(rowSums((X0 - fit$xhat)^2))
     sqrt(mean((X0 - fit$xhat)^2))
   }))
   rmspe.list <- try(sapply(fit.list, function(fit){
     xhat_test <- png.projection(Xtest, fit, method=fit$method)
+    # mean(rowSums((Xtest - xhat_test)^2))
     sqrt(mean((Xtest - xhat_test)^2))
   }))
   

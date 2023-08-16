@@ -10,24 +10,44 @@ png.loading2StartEnd <- function(mu,vhat){
 }
 
 
+
+
 #' @export png.ternary.init
 png.ternary.init <- function(X, cex=0.8, color="grey50"){
   
+  # old
+  # {
+  #   par(mar = rep(0.5, 4))
+  #   TernaryPlot("A","B","C", grid.lines = 5, grid.lty = "dotted",
+  #               grid.minor.lines = 1, grid.minor.lty = "dotted")
+  #   AddToTernary(text, X, "o", cex = cex, font = 2, col=color)
+  # }
+  
+  C1 <- colnames(X)[1]
+  C2 <- colnames(X)[2]
+  C3 <- colnames(X)[3]
+  
   par(mar = rep(0.5, 4))
-  TernaryPlot("A","B","C", grid.lines = 5, grid.lty = "dotted",
+  TernaryPlot(C1,C2,C3, grid.lines = 5, grid.lty = "dotted",
+              lab.offset=c(0.16,0.2)[2],
               grid.minor.lines = 1, grid.minor.lty = "dotted")
   AddToTernary(text, X, "o", cex = cex, font = 2, col=color)
 }
 
 
+
+
 #' @export png.ternary.PC_axis
-png.ternary.PC_axis <- function(mu, vhat, color="grey20", cex=1){
+png.ternary.PC_axis <- function(mu, vhat, color="grey20", cex=1, print.PCtext=TRUE, adjust.pc=1.1){
   
-  Start <- apply(vhat,2,function(v)onedimconvexprojection(mu, v*-10, v))
-  End <- apply(vhat,2,function(v)onedimconvexprojection(mu, v*10, v))
+  Start <- apply(vhat,2,function(v) Solve_U_SP(v*-10, mu, v, gamma=0))
+  End <- apply(vhat,2,function(v) Solve_U_SP(v*10, mu, v, gamma=0))
   for( k in 1:length(Start) ){
     TernaryLines(rbind((mu+Start[k]*vhat[,k]), (mu+End[k]*vhat[,k])), col = color)
-    TernaryText((mu+End[k]*vhat[,k]), paste0("PC",k), cex = cex, col = "darkblue", font = 2)
+    if(print.PCtext){
+      TernaryText((mu+(End[k]*adjust.pc)*vhat[,k]), paste0("PC",k), cex = cex, col = "darkblue", font = 2)
+    }
+    
   }
   
   return(list(Start=Start, End=End))
@@ -40,7 +60,7 @@ png.ternary.point <- function(tuple, shape="x", cex, color="red"){
 
 
 #' @export png.ternary
-png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0){
+png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0, adjust.pc=1.1, print.caption=TRUE, print.PCtext=TRUE){
   if(FALSE){
     cex=0.5
   }
@@ -53,7 +73,7 @@ png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0){
     if(is.list(vhat)){
       
       if(is.null(mu)){
-        mu <- png.iclr(colMeans(log(X)))
+        mu <- (colMeans(log(X)))
       }
       
       for( jj in 1:NCOL(vhat[[1]]) ){
@@ -67,7 +87,7 @@ png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0){
           
           TernaryLines(rbind(vhat.start,vhat.end), col = "darkblue")
         }
-        TernaryText(vhat.end, paste0("PC",jj), cex = cex*0.8, col = "darkblue", font = 2)
+        TernaryText(vhat.end*adjust.pc, paste0("PC",jj), cex = cex*0.8, col = "darkblue", font = 2)
       }
       
     } else {
@@ -76,14 +96,18 @@ png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0){
         mu <- colMeans(X)
       }
       
-      png.ternary.PC_axis(mu, vhat, color="darkblue", cex=cex*0.8)
+      png.ternary.PC_axis(mu, vhat, color="darkblue", cex=cex*0.8, print.PCtext=print.PCtext, adjust.pc=adjust.pc)
       
     }
   }
   
   if(!is.null(xhat)){
     AddToTernary(text, xhat, "x", font = 1.5, col="darkred", cex=cex*0.6)
-    text(x = 0, y = -0.15, "o: data points;  x: fitted values", col = "black", cex=cex*0.8)
+    
+    if(print.caption){
+      text(x = 0, y = -0.15, "o: data points;  x: fitted values", col = "black", cex=cex*0.8)
+    }
+    
   }
   
   
