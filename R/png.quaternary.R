@@ -132,7 +132,7 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred",
                 xlim = c(-0.55,0.5), 
                 ylim = c(-0.55,0.5), 
                 zlim = c(-0.55,0.9), 
-                col = xhat.col, pch = "+", add=TRUE)
+                col = xhat.col, pch = 3, add=TRUE)
     }
   }
   

@@ -1,3 +1,20 @@
+#' @export png.pca.plot
+png.pca.plot <- function(X, ...){
+  X %>% {
+    PCs <- prcomp(.)$x
+    ExplainedVariance <- round(apply(PCs,2,var) %>% {(.)/sum(.)} %>% head(2),4)*100
+    
+    pch=18
+    PCs %>% plot(pch=pch, 
+                 xlab=paste0("PC1 (", format(ExplainedVariance[1], digits=1, nsmall=1), "%)"),
+                 ylab=paste0("PC2 (", format(ExplainedVariance[2], digits=1, nsmall=1), "%)"), ...)
+    # mtext(side=3, text=site, adj=0)
+    # mtext(side=3, text=paste(paste0(c("PC1: ", "PC2: "), round(PCs %>% apply(2,var) %>% {(.)/sum(.)} %>% head(2),3)*100,"%"), collapse="; "), padj=0, adj=1, cex=0.6)
+  }
+  
+}
+
+
 #' @export png.pca.convergence
 png.pca.convergence <- function(fit){
   if(FALSE){
@@ -366,7 +383,7 @@ png.MultiCompositionalPlot <- function(p.list, title="", legend.ncol=10){
 
 
 #' @export png.CheckComposition
-png.CheckComposition <- function(X){
+png.CheckComposition <- function(X, eps=1e-8){
   if(FALSE){
     n=10; p=500
     set.seed(2)
@@ -377,9 +394,9 @@ png.CheckComposition <- function(X){
   }
   
   wh <- t( apply(X,1,function(x) {
-    a=(abs(sum(x)-1)>1e-4)
-    b=any(x<0-1e-8)
-    c=any(x>1+1e-8)
+    a=(abs(sum(x)-1)>eps)
+    b=any(x<0-eps)
+    c=any(x>1+eps)
     c(a,b,c)
   }) )
   

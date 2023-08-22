@@ -159,6 +159,21 @@ sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, see
     mean(data$X2==0)
     data$X2 %>% apply(1,function(x) any(x==0)) %>% mean
     
+    
+    lapply(1:100, function(i) sim.LogNormal(n=50, p=100, r=5, snr=5, d=10, d0=0, seed=i, verbose=TRUE)) %>% 
+      sapply(function(x) x$X2 %>% apply(1,function(x) any(x==0)) %>% mean ) %>% mean
+    
+    lapply(1:100, function(i) sim.LogNormal(n=50, p=200, r=5, snr=5, d=10, d0=0, seed=i, verbose=TRUE)) %>% 
+      sapply(function(x) x$X2 %>% apply(1,function(x) any(x==0)) %>% mean ) %>% mean
+    
+    
+    lapply(1:100, function(i) sim.LogNormal(n=50, p=100, r=5, snr=5, d=10, d0=0, seed=i, verbose=TRUE)) %>% 
+      sapply(function(x) mean(x$X2==0) ) %>% mean
+    
+    lapply(1:100, function(i) sim.LogNormal(n=50, p=200, r=5, snr=5, d=10, d0=0, seed=i, verbose=TRUE)) %>% 
+      sapply(function(x) mean(x$X2==0) ) %>% mean
+    
+    
     data %>% {
       Xnew <- png.lrpca(.$X2, nrank=2, zero.replace="simple", delta=1e-10)$Xnew
       png.quaternary3d(Xnew, vhat=.$Vlist, mu=.$mu)
@@ -172,23 +187,23 @@ sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, see
       line=-4.5
       pdf(file="Figure-sim.LogNormal.pdf", width=10, height=6)
       par(mfrow=c(2,3), mar = rep(0.2, 4), mai=c(0.4,0,0,0), omi=c(0,0,0,0))
-      snr=5; d=5
+      snr=5; d=1
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=5; d=10
+      snr=5; d=2
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=5; d=50
+      snr=5; d=4
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
       
-      snr=2; d=10
+      snr=2; d=2
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=5; d=10
+      snr=5; d=2
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=10; d=10
+      snr=10; d=2
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
       
@@ -206,7 +221,7 @@ sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, see
   
   set.seed(seed.V)
   V <- qr.Q(qr( do.call("cbind", lapply(1:r, function(x) rnorm(p))) ))
-  D <- sapply(1:r, function(k) log(d/k + d0))
+  D <- sapply(1:r, function(k) (d/k + d0))
   
   set.seed(seed.U)
   U <- matrix(0,n,r)

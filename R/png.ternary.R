@@ -13,7 +13,7 @@ png.loading2StartEnd <- function(mu,vhat){
 
 
 #' @export png.ternary.init
-png.ternary.init <- function(X, cex=0.8, color="grey50"){
+png.ternary.init <- function(X, cex=0.8, cex.axis=1.0, color="grey50"){
   
   # old
   # {
@@ -30,7 +30,7 @@ png.ternary.init <- function(X, cex=0.8, color="grey50"){
   par(mar = rep(0.5, 4))
   TernaryPlot(C1,C2,C3, grid.lines = 5, grid.lty = "dotted",
               lab.offset=c(0.16,0.2)[2],
-              grid.minor.lines = 1, grid.minor.lty = "dotted")
+              grid.minor.lines = 1, grid.minor.lty = "dotted", lab.cex=cex.axis, axis.cex=cex.axis)
   AddToTernary(text, X, "o", cex = cex, font = 2, col=color)
 }
 
@@ -60,13 +60,13 @@ png.ternary.point <- function(tuple, shape="x", cex, color="red"){
 
 
 #' @export png.ternary
-png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0, adjust.pc=1.1, print.caption=TRUE, print.PCtext=TRUE){
+png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0, cex.axis=1.0, adjust.pc=1.1, print.caption=TRUE, print.PCtext=FALSE){
   if(FALSE){
     cex=0.5
   }
   
   
-  png.ternary.init(X, color="grey40", cex=cex*0.6)
+  png.ternary.init(X, color="grey40", cex=cex*0.6, cex.axis=cex.axis)
   
   if(!is.null(vhat)){
     
@@ -87,7 +87,10 @@ png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0, adjust.pc=1.1
           
           TernaryLines(rbind(vhat.start,vhat.end), col = "darkblue")
         }
-        TernaryText(vhat.end*adjust.pc, paste0("PC",jj), cex = cex*0.8, col = "darkblue", font = 2)
+        if(print.PCtext){
+          TernaryText(vhat.end*adjust.pc, paste0("PC",jj), cex = cex*0.8, col = "darkblue", font = 2)
+        }
+        
       }
       
     } else {
@@ -102,7 +105,7 @@ png.ternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, cex=1.0, adjust.pc=1.1
   }
   
   if(!is.null(xhat)){
-    AddToTernary(text, xhat, "x", font = 1.5, col="darkred", cex=cex*0.6)
+    AddToTernary(text, xhat, "x", font = 1.5, col="darkred", cex=cex*0.8)
     
     if(print.caption){
       text(x = 0, y = -0.15, "o: data points;  x: fitted values", col = "black", cex=cex*0.8)

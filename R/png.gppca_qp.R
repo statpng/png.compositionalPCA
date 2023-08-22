@@ -1,5 +1,5 @@
 #' @export png.gppca_qp
-png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-6, kappa=1e-8, gamma=1e-2, phi=0.01, verbose=FALSE, V.init=c("PC","random")){
+png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-6, kappa=1e-8, gamma=1e-3, phi=0.01, verbose=FALSE, V.init=NULL){
   if(FALSE){
     X=data$X2; nrank=r; V.init="PC"
     nrank=2; maxit=500; eps=1e-6; kappa=1e-4; gamma=0; verbose=TRUE; V.init=c("PC","random")[1]
@@ -61,6 +61,12 @@ png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-6, kappa=1e-8, gamma=1e-2
     nrank=2; epsilon=1e-4; maxit=100; kappa=1e-8
   }
   
+  
+  
+  
+  if(is.null(V.init)){
+    V.init <- c("PC","random")[1]
+  }
   
   
   n=nrow(X); p=ncol(X); r=nrank

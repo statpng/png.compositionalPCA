@@ -109,6 +109,21 @@ png.pca <- function(X, nrank=2){
 png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
   
   n=nrow(X); p=ncol(X); 
+  if(delta=="min1"){
+    delta <- min(X[X>0])/1
+  }
+  if(delta=="min2"){
+    delta <- min(X[X>0])/2
+  }
+  if(delta=="min3"){
+    delta <- min(X[X>0])/3
+  }
+  if(delta=="min4"){
+    delta <- min(X[X>0])/4
+  }
+  if(delta=="min5"){
+    delta <- min(X[X>0])/5
+  }
   
   if(!is.null(zero.replace)){
     f <- switch(zero.replace, 
