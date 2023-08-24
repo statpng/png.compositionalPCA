@@ -6,7 +6,7 @@ tmp.simplex <- function(n) {
 
 
 #' @export png.quaternary
-png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred", cex=0.5, theta = 675, phi=-15, print.surface=TRUE, alpha=0.05, n.grid=100, use.par=FALSE){
+png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred", cex=0.5, pch=1, col="grey50", theta = 675, phi=-15, print.surface=TRUE, alpha=0.05, n.grid=100, use.par=FALSE){
   if(FALSE){
     vhat=NULL; xhat=NULL; xhat.col="darkred"; cex=0.5; theta = 675; phi=-15; print.surface=TRUE; alpha=0.05; n.grid=100
     cex=0.5;  theta = 675;  phi=-15
@@ -40,7 +40,7 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred",
             xlim = c(-0.55,0.5), 
             ylim = c(-0.55,0.5), 
             zlim = c(-0.55,0.9), 
-            col = "grey50", pch = 1, box = FALSE, theta = theta, phi=phi)
+            col = col, pch = pch, box = FALSE, theta = theta, phi=phi)
   lines3D(tetra[c(1,2,3,4,1,3,1,2,4),1],
           tetra[c(1,2,3,4,1,3,1,2,4),2],
           tetra[c(1,2,3,4,1,3,1,2,4),3],

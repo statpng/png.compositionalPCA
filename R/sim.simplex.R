@@ -149,7 +149,7 @@ sim.simplex.test <- function(params){
 
 
 #' @export sim.LogNormal
-sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, seed.U=seed, seed.V=seed, verbose=FALSE){
+sim.LogNormal <- function(n, p, r, snr=5, d=3, d0=0, zero.prop=0.1, seed=1, seed.U=seed, seed.V=seed, verbose=FALSE){
   # Simulate compositional data
   
   if(FALSE){
@@ -167,10 +167,10 @@ sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, see
       sapply(function(x) x$X2 %>% apply(1,function(x) any(x==0)) %>% mean ) %>% mean
     
     
-    lapply(1:100, function(i) sim.LogNormal(n=50, p=100, r=5, snr=5, d=10, d0=0, seed=i, verbose=TRUE)) %>% 
+    lapply(1:100, function(i) sim.LogNormal(n=50, p=100, r=5, snr=5, d=3, d0=0, seed=i, verbose=TRUE)) %>% 
       sapply(function(x) mean(x$X2==0) ) %>% mean
     
-    lapply(1:100, function(i) sim.LogNormal(n=50, p=200, r=5, snr=5, d=10, d0=0, seed=i, verbose=TRUE)) %>% 
+    lapply(1:100, function(i) sim.LogNormal(n=50, p=200, r=5, snr=5, d=3, d0=0, seed=i, verbose=TRUE)) %>% 
       sapply(function(x) mean(x$X2==0) ) %>% mean
     
     
@@ -190,20 +190,20 @@ sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, see
       snr=5; d=1
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=5; d=2
+      snr=5; d=3
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=5; d=4
+      snr=5; d=5
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
       
-      snr=2; d=2
+      snr=2; d=3
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=5; d=2
+      snr=5; d=3
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
-      snr=10; d=2
+      snr=10; d=3
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, d0=0, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}
       mtext(text=sprintf("[snr, d] = [%d, %d]", snr, d), side=3, line=line)
       
@@ -230,6 +230,7 @@ sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, see
   }
   
   X0 <- tcrossprod(rep(1,n),mu) + tcrossprod(U,V)
+  X02 <- png.ICLR(X0)
   
   E <- matrix(rnorm(n*p,0,1),n,p)
   sigma <- sqrt(sum(as.numeric(X0)^2)/sum(as.numeric(E)^2)/snr)
@@ -263,7 +264,7 @@ sim.LogNormal <- function(n, p, r, snr=5, d=10, d0=0, zero.prop=0.1, seed=1, see
   #
   params <- list(n=n, p=p, r=r, snr=snr, d=d, d0=d0, seed=seed, seed.U=seed.U, seed.V=seed.V)
   #
-  result <- list(mu=mu, U=U, D=D, V=V, Vlist=lapply(seq(-20,20,1), function(z) z*V), E=E, X0=X0, X=X, X2=X2, params=params)
+  result <- list(mu=mu, U=U, D=D, V=V, Vlist=lapply(seq(-20,20,1), function(z) z*V), E=E, X0=X02, X=X, X2=X2, params=params)
   #
   return( result )
   

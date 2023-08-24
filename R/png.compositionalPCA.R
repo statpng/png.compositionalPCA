@@ -106,24 +106,17 @@ png.pca <- function(X, nrank=2){
 
 
 #' @export png.lrpca
-png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta=1e-6){
+png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta="min0"){
+  
+  if(grepl("min",delta)){
+    delta_num <- as.numeric(gsub("min","",delta))
+    
+    delta <- min(X[X>0]) * 10^(delta_num)
+  }
+  
   
   n=nrow(X); p=ncol(X); 
-  if(delta=="min1"){
-    delta <- min(X[X>0])/1
-  }
-  if(delta=="min2"){
-    delta <- min(X[X>0])/2
-  }
-  if(delta=="min3"){
-    delta <- min(X[X>0])/3
-  }
-  if(delta=="min4"){
-    delta <- min(X[X>0])/4
-  }
-  if(delta=="min5"){
-    delta <- min(X[X>0])/5
-  }
+  
   
   if(!is.null(zero.replace)){
     f <- switch(zero.replace, 
@@ -226,30 +219,23 @@ png.gppca <- function(X, nrank=2, V=prcomp(X)$rotation[,1:nrank,drop=F]){
 
 #' @export png.fit_all
 png.fit_all <- function(X, nrank, ...){
-  delta1 <- 1e-12
-  delta2 <- 1e-8
-  delta.seq <- c(1e-12, 1e-11, 1e-10, 1e-9, 1e-8,
-                 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
+  # delta1 <- 1e-12
+  # delta2 <- 1e-8
+  # delta.seq <- c(1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
+  X <- matrix( as.numeric(X), nrow(X), ncol(X) )
+  delta.seq <- min(X[X>0]) * c(1e-2, 1e-1, 1e+0, 1e+1, 1e+2)
   
   fit1 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=nrank, zero.replace="simple", delta=.x))
-  # fit2 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=r, zero.replace="additive", delta=.x))
-  fit2 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=nrank, zero.replace="multiplicative", delta=.x))
+  names(fit1) <- paste0("lrPCA (", format(delta.seq/min(X[X>0]), scientific=T), ")")
   
-  # names(fit1) <- paste0("simple(", seq_len(length(delta.seq)), ")")
-  names(fit1) <- paste0("simple(", format(delta.seq,digits=2), ")")
-  # names(fit2) <- paste0("multiplicative(", seq_len(length(delta.seq)), ")")
-  names(fit2) <- paste0("multiplicative(", format(delta.seq,digits=2), ")")
-  # names(fit3) <- paste0("additive_", format(delta.seq,digits=2) )
+  fit2 <- png.gppca(X, nrank=nrank)
   
-  fit3 <- png.ppca(X, nrank=nrank)
-  fit4 <- png.gppca(X, nrank=nrank)
+  gamma.seq <- 10^(-seq(1, 5, 2))
+  fit3 <- purrr::map(gamma.seq, ~try(png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...)))
+  fit4 <- purrr::map(gamma.seq, ~try(png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...)))
   
-  gamma.seq <- c(10^(-seq(1, 7, 2)), 0)
-  fit5 <- purrr::map(gamma.seq, ~png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...))
-  fit6 <- purrr::map(gamma.seq, ~png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...))
-  
-  names(fit5) <- paste0("ppca_qp_", format(gamma.seq, digits=2) )
-  names(fit6) <- paste0("gppca_qp_", format(gamma.seq, digits=2) )
+  names(fit3) <- paste0("aCPCA (", format(gamma.seq,digits=2), ")" )
+  names(fit4) <- paste0("CPCA (", format(gamma.seq,digits=2), ")" )
   
   # fit5 %>% sapply(function(fit){
   #   sqrt(mean((data$X0 - fit$xhat)^2))
@@ -259,7 +245,7 @@ png.fit_all <- function(X, nrank, ...){
   # })
   # fit6[[3]] %>% png.crit.path()
   
-  fit.list <- list(fit1,fit2,list(ppca=fit3),list(gppca=fit4),fit5,fit6) %>% Reduce(append, .)
+  fit.list <- list(fit1,list(crPCA=fit2),fit3,fit4) %>% Reduce(append, .)
   fit.list
 }
 
@@ -294,6 +280,53 @@ png.pca.rmse <- function(fit.list, data, n.test="10x"){
   
   cbind(rmse=rmse.list, rmspe=rmspe.list)
 }
+
+
+
+
+
+
+#' @export png.pca.rmse_rank
+png.pca.rmse_rank <- function(fit.list, data, n.test="10x"){
+  X0=data$X0
+  params=data$params
+  
+  if(n.test == "10x"){
+    params_test <- png.list.replace(params, list(n=10*params[["n"]]))
+  } else {
+    params_test <- png.list.replace(params, list(n=n.test))
+  }
+  
+  Xtest <- sim.LogNormal.test(params_test)$X2
+  
+  rmse.list <- try(sapply(fit.list, function(fit){
+    
+    lapply(1:data$params$r, function(r){
+      Xhat <- png.projection(data$X2, fit=fit, nrank=r, method=fit$method)
+      sqrt(mean((data$X0 - Xhat)^2))
+    }) %>% unlist
+    
+  }))
+  
+  
+  # rmse.list %>% {cbind.data.frame(rank=1:nrow(.), .)} %>% as.data.frame %>% gather(method, value, -rank) %>% ggplot() + geom_line(aes(rank, value, color=method)) + png.utils::png.ggplot.scale_y_log10()
+  
+  
+  rmspe.list <- try(sapply(fit.list, function(fit){
+    
+    lapply(1:data$params$r, function(r){
+      Xhat <- png.projection(Xtest, fit=fit, nrank=r, method=fit$method)
+      sqrt(mean((Xtest - Xhat)^2))
+    }) %>% unlist
+    
+  }))
+  
+  # rmspe.list %>% {cbind.data.frame(rank=1:nrow(.), .)} %>% as.data.frame %>% gather(method, value, -rank) %>% ggplot() + geom_line(aes(rank, value, color=method)) + png.utils::png.ggplot.scale_y_log10()
+  
+  
+  list(rmse=rmse.list, rmspe=rmspe.list)
+}
+
 
 
 
