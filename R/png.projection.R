@@ -94,9 +94,29 @@ png.projection <- function(X, fit, nrank=NULL, method=c("pca","ppca", "gppca", "
 
 
 #' @export png.projection2
-png.projection2 <- function(X, fit, nrank=NULL, method=c("pca_proj","ppca", "gppca", "lrpca")){
+png.projection2 <- function(X, fit, nrank=NULL, method=c("pca_proj","ppca", "gppca", "lrpca"), nu=1e-8){
   if(FALSE){
     X=Xtrain; method=fit$method
+    
+    data <- sim.LogNormal(n=500, p=100, r=2, snr=0.001, d=d, seed=1, verbose=TRUE); 
+    Xtest <- sim.LogNormal.test(data$params)$X2
+    
+    fit1 <- png.ppca_qp(X, nrank=2)
+    fit2 <- png.gppca_qp(X, nrank=2)
+    
+    sum( abs( fit1$uhat[,1] - fit2$uhat[,1] ) )
+    sum( abs( fit1$xhat[,1] - fit2$xhat[,1] ) )
+    png.projection(X, fit1, method=fit1$method)$xhat[1:5,1:5]
+    proj1 <- fit1 %>% { png.projection3(Xtest, ., nrank=1, method=.$method, nu=1e-16) }
+    proj2 <- fit2 %>% { png.projection3(Xtest, ., nrank=1, method=.$method, nu=1e-16) }
+    
+    sum(abs(proj1$xhat - proj2$xhat ))
+    
+    rmspe.list <- try(sapply(fit.list, function(fit){
+      xhat_test <- png.projection(Xtest, fit, method=fit$method)
+      # mean(rowSums((Xtest - xhat_test)^2))
+      sqrt(mean((Xtest - xhat_test)^2))
+    }))
   }
   
   n=nrow(X); p=ncol(X); 
@@ -146,7 +166,11 @@ png.projection2 <- function(X, fit, nrank=NULL, method=c("pca_proj","ppca", "gpp
     uhat <- matrix(0,n,r)
     for( i in 1:n ){
       # uhat[i,] <- multidimconvexprojection(mu, as.vector(X[i,]), vhat)
-      uhat[i,] <- Solve_U_GP(as.vector(X[i,]), mu, vhat, gamma=0)
+      if( r > 1 ){
+        uhat[i,] <- Solve_U_GP(as.vector(X[i,]), mu, vhat, gamma=0, nu=nu)
+      } else {
+        uhat[i,k] <- Solve_U_SP(as.vector(X[i,]), mu, vhat[,1], gamma=0)
+      }
     }
     # it=fit$fit.path[[r]]$it;  gamma=fit$params$gamma
     # uhat <- uhat * (1-gamma/it)

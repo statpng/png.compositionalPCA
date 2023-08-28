@@ -231,8 +231,8 @@ png.fit_all <- function(X, nrank, ...){
   fit2 <- png.gppca(X, nrank=nrank)
   
   gamma.seq <- 10^(-seq(1, 5, 2))
-  fit3 <- purrr::map(gamma.seq, ~try(png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...)))
-  fit4 <- purrr::map(gamma.seq, ~try(png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, V.init="PC", ...)))
+  fit3 <- purrr::map(gamma.seq, ~try(png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, kappa=1e-8, V.init="PC", ...)))
+  fit4 <- purrr::map(gamma.seq, ~try(png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, kappa=1e-8, V.init="PC", ...)))
   
   names(fit3) <- paste0("aCPCA (", format(gamma.seq,digits=2), ")" )
   names(fit4) <- paste0("CPCA (", format(gamma.seq,digits=2), ")" )
@@ -347,3 +347,37 @@ png.fit_all.cv <- function(X, nfold=5, nrank=5, ...){
   }
   return(list(fit.list=fit.list, foldid=foldid))
 }
+
+
+
+
+
+
+
+png.adist <- function(x,y){
+  sqrt(sum((png.clr(x) - png.clr(x))^2))
+}
+
+png.STRESS <- function(X){
+  if(FALSE){
+    set.seed(1); 
+    X=rdirichlet(10,c(1,2,3)) %>% {ifelse(.<0.2,0,.) %>% apply(1,function(x)x/sum(x)) %>% t} 
+    Y=rdirichlet(10,c(1,2,3)) %>% {ifelse(.<0.2,0,.) %>% apply(1,function(x)x/sum(x)) %>% t} 
+  }
+  
+  MIN <-  min(X[X>0])
+  delta.seq <- MIN * pmin(1,10^seq(-2,2,1))
+  
+  delta <- delta.seq[1]
+  
+  Xnew <- png.ZeroReplace.simple(X, delta=delta)
+  
+  for( i in 1:nrow(X) ){
+    png.adist( X[i,], Xnew[i,] )
+  }
+  
+  
+  sqrt(sum((png.clr(x1) - png.clr(x2))^2))
+}
+
+

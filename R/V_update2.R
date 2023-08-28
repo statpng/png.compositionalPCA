@@ -103,7 +103,7 @@ Solve_U_SP <- function(x, mu, v, gamma=0){
 }
 
 #' @export Solve_U_GP
-Solve_U_GP <- function(x, mu, V, gamma=0){
+Solve_U_GP <- function(x, mu, V, gamma=0, nu=1e-8){
   if(FALSE){
     x=X[i,]; mu=C[i,]; V=cbind(Vhat, Vk_old); gamma=gamma/(it^(1/2))
   }
@@ -111,7 +111,7 @@ Solve_U_GP <- function(x, mu, V, gamma=0){
   x=as.numeric(x)
   mu=as.numeric(mu)
   
-  U <- solve.QP(Dmat=crossprod(V), dvec=t(V) %*% (x - mu), Amat=t(V), bvec=-mu - 1e-8)$solution
+  U <- solve.QP(Dmat=crossprod(V), dvec=t(V) %*% (x - mu), Amat=t(V), bvec=-mu - nu)$solution
   # U <- solve.QP(Dmat=crossprod(V), dvec=t(V) %*% (x - mu), Amat=t(V), bvec=-mu)$solution
   return(U * (1-gamma))
 }
