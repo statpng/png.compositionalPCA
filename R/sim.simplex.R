@@ -32,7 +32,9 @@ sim.simplex <- function(n, p, r, snr=2, d=10, d0=0, seed=1, seed.U=seed, seed.V=
     n=100; p=4; r=1; d=10
     
     line=-4.5
-    pdf(file="Figure-sim.simplex.pdf", width=10, height=6)
+    setEPS()
+    postscript(file="Figure-sim.simplex.eps", width=10, height=6)
+    # pdf(file="Figure-sim.simplex.pdf", width=10, height=6)
     par(mfrow=c(2,3), mar = rep(0.2, 4), mai=c(0.4,0,0,0), omi=c(0,0,0,0))
     snr=2; eta=-0.1
     sim.simplex(n=n, p=p, r=r, snr=snr, d=d, eta=eta, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$V, mu=.$mu, use.par=F)}
@@ -185,7 +187,9 @@ sim.LogNormal <- function(n, p, r, snr=5, d=3, d0=0, zero.prop=0.1, seed=1, seed
       n=100; p=4; r=1;
       
       line=-4.5
-      pdf(file="Figure-sim.LogNormal.pdf", width=10, height=6)
+      setEPS()
+      postscript(file="Figure-sim.LogNormal.eps", width=10, height=6)
+      # pdf(file="Figure-sim.LogNormal.pdf", width=10, height=6)
       par(mfrow=c(2,3), mar = rep(0.2, 4), mai=c(0.4,0,0,0), omi=c(0,0,0,0))
       snr=5; d=1
       sim.LogNormal(n=n, p=p, r=r, snr=snr, d=d, seed=1, verbose=TRUE) %>% {png.quaternary(X=.$X2+1e-16, vhat=.$Vlist, mu=.$mu, use.par=F)}

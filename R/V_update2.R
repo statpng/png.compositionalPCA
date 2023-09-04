@@ -24,6 +24,8 @@ V_update2 <- function(X, Uhat, Vhat, Uk, kappa=1e-8){
     if(inherits(Vnew, "try-error")){
       return( "No solution" )
     } else {
+      Vnew <- Vnew/norm(Vnew,"2")
+      Vnew <- ifelse(abs(Vnew)<1e-8, 0, Vnew)
       return( Vnew/norm(Vnew,"2") )
     }
     # bvec <- c(rep(0,1), rep(-1e-12,2*r), lb-kappa, -(ub+kappa))
