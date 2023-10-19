@@ -6,7 +6,7 @@ tmp.simplex <- function(n) {
 
 
 #' @export png.quaternary
-png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred", cex=0.5, pch=1, col="grey50", theta = 675, phi=-15, print.surface=TRUE, alpha=0.05, n.grid=100, use.par=FALSE){
+png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred", cex=0.5, cex.text=1.1, pch=1, col="grey50", theta = 675, phi=-15, print.surface=TRUE, alpha=0.05, n.grid=100, use.par=FALSE){
   if(FALSE){
     vhat=NULL; xhat=NULL; xhat.col="darkred"; cex=0.5; theta = 675; phi=-15; print.surface=TRUE; alpha=0.05; n.grid=100
     cex=0.5;  theta = 675;  phi=-15
@@ -137,12 +137,12 @@ png.quaternary <- function(X, vhat=NULL, xhat=NULL, mu=NULL, xhat.col="darkred",
   }
   
   # tetra[1,1] <- tetra[1,1]+0.1
-  tetra[1,3] <- tetra[1,3]-0.05
-  tetra[2,1] <- tetra[2,1]+0.1
+  tetra[1,3] <- tetra[1,3]-0.1
+  tetra[2,1] <- tetra[2,1]+0.2
   tetra[3,1] <- tetra[3,1]-0.2
   tetra[4,3] <- tetra[4,3]+0.10
   
-  text3D(tetra[,1], tetra[,2], tetra[,3], colnames(X), add = TRUE)
+  text3D(tetra[,1], tetra[,2], tetra[,3], colnames(X), add = TRUE, cex=cex.text)
   
   # par(mfrow = pm)
   # par(mar = pmar)

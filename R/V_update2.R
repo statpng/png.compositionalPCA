@@ -11,6 +11,7 @@ V_update2 <- function(X, Uhat, Vhat, Uk, kappa=1e-8){
   
   Vnew <- rep(0,p)
   Dmat <- diag(rep(1,p))
+  dvec <- t(X-tcrossprod(rep(1,n),mu)) %*% Uk/sum(Uk^2)
   dvec <- t(X-C) %*% Uk/sum(Uk^2)
   
   solve_V <- function(Vhat, lbmat=NULL, ubmat=NULL, kappa=0) {

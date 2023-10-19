@@ -77,7 +77,6 @@ png.rank12 <- function(X, maxit=500, eps=1e-8, kappa=1e-4, gamma=0, phi=0.01, V.
 
 
 
-
 #' @export UV_update2
 UV_update2 <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, nu=1e-8, phi=0.01, V.init=c("PC","random"), verbose=TRUE){
   if(FALSE){
@@ -116,6 +115,7 @@ UV_update2 <- function(X, Uhat, Vhat, maxit=500, eps=1e-6, kappa=1e-4, gamma=0, 
     
     # U-update
     Unew <- t(sapply(1:n, function(i) Solve_U_GP(x=X[i,], mu=C[i,], V=cbind(Vhat, Vk_old), gamma=gamma/(it^(1/2)), nu=nu)))
+    
     # V-update
     Vk_new <- V_update2(X, Uhat=Unew[,1:(r-1)], Vhat=Vhat, Uk=Unew[,r], kappa=kappa)
     if( Vk_new[1] == "No solution" ){

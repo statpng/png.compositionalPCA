@@ -105,41 +105,6 @@ png.pca <- function(X, nrank=2){
 }
 
 
-#' @export png.lrpca
-png.lrpca <- function(X, nrank=2, zero.replace=NULL, delta="min0"){
-  
-  if(grepl("min",delta)){
-    delta_num <- as.numeric(gsub("min","",delta))
-    
-    delta <- min(X[X>0]) * 10^(delta_num)
-  }
-  
-  
-  n=nrow(X); p=ncol(X); 
-  
-  
-  if(!is.null(zero.replace)){
-    f <- switch(zero.replace, 
-                "simple"=png.ZeroReplace.simple,
-                "additive"=png.ZeroReplace.additive,
-                "multiplicative"=png.ZeroReplace.multiplicative)
-    Xnew <- t(apply(X, 1, f, delta=delta))
-  } else {
-    Xnew <- X
-  }
-  
-  mu = png.iclr( colMeans( log(Xnew) ) )
-  
-  Xclr <- t(apply(Xnew,1,png.clr))
-  fit <- png.pca(Xclr, nrank=nrank)
-  uhat <- fit$uhat
-  vhat <- lapply( seq(-20,20,0.5), function(z){
-    z*fit$vhat
-  })
-  xhat <- fit$xhat %>% {t(apply(.,1,png.iclr))}
-  
-  return( list(mu=mu, uhat=uhat, vhat=vhat, logmu=colMeans( log(Xnew) ), logvhat=fit$vhat, xhat=xhat, X=X, Xnew=Xnew, method="lrpca", zero.replace=zero.replace, delta=delta) )
-}
 
 
 #' @export png.ppca
@@ -223,16 +188,16 @@ png.fit_all <- function(X, nrank, ...){
   # delta2 <- 1e-8
   # delta.seq <- c(1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
   X <- matrix( as.numeric(X), nrow(X), ncol(X) )
-  delta.seq <- min(X[X>0]) * c(1e-2, 1e-1, 1e+0, 1e+1, 1e+2)
+  delta.seq <- paste0("min", c(-2,-1,0,1,2))
   
   fit1 <- purrr::map(delta.seq, ~ png.lrpca(X, nrank=nrank, zero.replace="simple", delta=.x))
-  names(fit1) <- paste0("lrPCA (", format(delta.seq/min(X[X>0]), scientific=T), ")")
+  names(fit1) <- paste0("lrPCA (", gsub("min","",delta.seq), ")")
   
   fit2 <- png.gppca(X, nrank=nrank)
   
-  gamma.seq <- 10^(-seq(1, 5, 2))
-  fit3 <- purrr::map(gamma.seq, ~try(png.ppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, kappa=1e-8, V.init="PC", ...)))
-  fit4 <- purrr::map(gamma.seq, ~try(png.gppca_qp(X, nrank=nrank, gamma=.x, eps=1e-8, maxit=500, kappa=1e-8, V.init="PC", ...)))
+  gamma.seq <- 0.1 # 10^(-seq(1, 5, 2))
+  fit3 <- purrr::map(gamma.seq, ~try(png.ppca_qp(X, nrank=nrank, gamma=.x, ...)))
+  fit4 <- purrr::map(gamma.seq, ~try(png.gppca_qp(X, nrank=nrank, gamma=.x, ...)))
   
   names(fit3) <- paste0("aCPCA (", format(gamma.seq,digits=2), ")" )
   names(fit4) <- paste0("CPCA (", format(gamma.seq,digits=2), ")" )
@@ -255,8 +220,37 @@ png.fit_all <- function(X, nrank, ...){
 
 
 
-#' @export png.pca.rmse
-png.pca.rmse <- function(fit.list, data, n.test="10x"){
+#' @export png.pca.rmse.linear
+png.pca.rmse.linear <- function(fit.list, data, n.test="10x"){
+  X0=data$X0
+  params=data$params
+  
+  if(n.test == "10x"){
+    params_test <- png.list.replace(params, list(n=10*params[["n"]]))
+  } else {
+    params_test <- png.list.replace(params, list(n=n.test))
+  }
+  
+  Xtest <- sim.simplex.test(params_test)$X2
+  
+  rmse.list <- try(sapply(fit.list, function(fit){
+    # mean(rowSums((X0 - fit$xhat)^2))
+    sqrt(mean((X0 - fit$xhat)^2))
+  }))
+  rmspe.list <- try(sapply(fit.list, function(fit){
+    xhat_test <- png.projection(Xtest, fit, method=fit$method)$xhat
+    # mean(rowSums((Xtest - xhat_test)^2))
+    sqrt(mean((Xtest - xhat_test)^2))
+  }))
+  
+  cbind(rmse=rmse.list, rmspe=rmspe.list)
+}
+
+
+
+
+#' @export png.pca.rmse.LogNormal
+png.pca.rmse.LogNormal <- function(fit.list, data, n.test="10x"){
   X0=data$X0
   params=data$params
   
@@ -273,7 +267,7 @@ png.pca.rmse <- function(fit.list, data, n.test="10x"){
     sqrt(mean((X0 - fit$xhat)^2))
   }))
   rmspe.list <- try(sapply(fit.list, function(fit){
-    xhat_test <- png.projection(Xtest, fit, method=fit$method)
+    xhat_test <- png.projection(Xtest, fit, method=fit$method)$xhat
     # mean(rowSums((Xtest - xhat_test)^2))
     sqrt(mean((Xtest - xhat_test)^2))
   }))
@@ -283,11 +277,8 @@ png.pca.rmse <- function(fit.list, data, n.test="10x"){
 
 
 
-
-
-
-#' @export png.pca.rmse_rank
-png.pca.rmse_rank <- function(fit.list, data, n.test="10x"){
+#' @export png.pca.rmse.LogNormal_rank
+png.pca.rmse.LogNormal_rank <- function(fit.list, data, n.test="10x"){
   X0=data$X0
   params=data$params
   
@@ -298,6 +289,53 @@ png.pca.rmse_rank <- function(fit.list, data, n.test="10x"){
   }
   
   Xtest <- sim.LogNormal.test(params_test)$X2
+  
+  rmse.list <- try(sapply(fit.list, function(fit){
+    
+    lapply(1:data$params$r, function(r){
+      Xhat <- png.projection(data$X2, fit=fit, nrank=r, method=fit$method)
+      sqrt(mean((data$X0 - Xhat)^2))
+    }) %>% unlist
+    
+  }))
+  
+  
+  # rmse.list %>% {cbind.data.frame(rank=1:nrow(.), .)} %>% as.data.frame %>% gather(method, value, -rank) %>% ggplot() + geom_line(aes(rank, value, color=method)) + png.utils::png.ggplot.scale_y_log10()
+  
+  
+  rmspe.list <- try(sapply(fit.list, function(fit){
+    
+    lapply(1:data$params$r, function(r){
+      Xhat <- png.projection(Xtest, fit=fit, nrank=r, method=fit$method)
+      sqrt(mean((Xtest - Xhat)^2))
+    }) %>% unlist
+    
+  }))
+  
+  # rmspe.list %>% {cbind.data.frame(rank=1:nrow(.), .)} %>% as.data.frame %>% gather(method, value, -rank) %>% ggplot() + geom_line(aes(rank, value, color=method)) + png.utils::png.ggplot.scale_y_log10()
+  
+  
+  list(rmse=rmse.list, rmspe=rmspe.list)
+}
+
+
+
+
+
+
+
+#' @export png.pca.rmse.linear_rank
+png.pca.rmse.linear_rank <- function(fit.list, data, n.test="10x"){
+  X0=data$X0
+  params=data$params
+  
+  if(n.test == "10x"){
+    params_test <- png.list.replace(params, list(n=10*params[["n"]]))
+  } else {
+    params_test <- png.list.replace(params, list(n=n.test))
+  }
+  
+  Xtest <- sim.simplex.test(params_test)$X2
   
   rmse.list <- try(sapply(fit.list, function(fit){
     

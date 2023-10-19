@@ -1,5 +1,5 @@
 #' @export png.gppca_qp
-png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-8, kappa=1e-8, gamma=1e-3, phi=0.01, nu=1e-8, verbose=FALSE, V.init=NULL){
+png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-8, kappa=1e-8, gamma=1e-1, phi=0.01, nu=1e-8, verbose=FALSE, V.init=NULL){
   if(FALSE){
     X=data$X2; nrank=r; V.init="PC"
     nrank=2; maxit=500; eps=1e-6; kappa=1e-4; gamma=0; verbose=TRUE; V.init=c("PC","random")[1]
@@ -91,11 +91,8 @@ png.gppca_qp <- function(X, nrank=2, maxit=500, eps=1e-8, kappa=1e-8, gamma=1e-3
       fit.path[[iter]] <- fit.rank1
     } else {
       # fit.UV <- UV_update(X=X, Vhat=V_total, maxit=maxit, eps=eps, kappa=kappa, gamma=gamma)
-      if( iter > 1 ){
-        fit.UV <- UV_update2(X, U_total, V_total, maxit=maxit, eps=eps, kappa=kappa, gamma=gamma, phi=phi, nu=1e-8, V.init=V.init, verbose=verbose)
-      } else {
-        fit.UV <- UV_update2(X, U_total, V_total, maxit=maxit, eps=eps, kappa=kappa, gamma=gamma, phi=phi, nu=nu, V.init=V.init, verbose=verbose)
-      }
+      
+      fit.UV <- UV_update2(X, U_total, V_total, maxit=maxit, eps=eps, kappa=kappa, gamma=gamma, phi=phi, nu=1e-8, V.init=V.init, verbose=verbose)
       
       
       U_total <- fit.UV$uhat

@@ -1,6 +1,6 @@
 
 #' @export png.ppca_qp
-png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-8, kappa=1e-8, gamma=1e-3, phi=0.01, V.init=NULL, verbose=FALSE){
+png.ppca_qp <- function(X, nrank=2, maxit=500, eps=1e-8, kappa=1e-8, gamma=1e-1, phi=0.01, V.init=NULL, verbose=FALSE){
   if(FALSE){
     X; nrank=2; maxit=500; eps=1e-8; kappa=1e-8; gamma=1e-2; phi=0.01; V.init=c("PC","random"); verbose=FALSE
   }

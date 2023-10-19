@@ -207,10 +207,10 @@ png.CompositionalPlot <- function(pseq, xhat=NULL, uhat=NULL, title="", df.color
   
   if(is.null(uhat)){
     TopTaxa <- pseq@tax_table[ top_taxa(pseq, n=1), "unique" ]
-    sample.sort <- rev(sample_names(pseq)[order(abundances(pseq)[TopTaxa, 
+    sample.sort <- (sample_names(pseq)[order(abundances(pseq)[TopTaxa, 
     ])])
   } else {
-    sample.sort <- rev(sample_names(pseq)[order(uhat)])
+    sample.sort <- (sample_names(pseq)[order(uhat)])
   }
   
   

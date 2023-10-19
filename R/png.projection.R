@@ -1,5 +1,5 @@
-#' @export png.projection
-png.projection <- function(X, fit, nrank=NULL, method=c("pca","ppca", "gppca", "lrpca")){
+#' @export png.projection_old
+png.projection_old <- function(X, fit, nrank=NULL, method=c("pca","ppca", "gppca", "lrpca")){
   if(FALSE){
     X=Xtrain; method=fit$method
   }
@@ -93,8 +93,8 @@ png.projection <- function(X, fit, nrank=NULL, method=c("pca","ppca", "gppca", "
 
 
 
-#' @export png.projection2
-png.projection2 <- function(X, fit, nrank=NULL, method=c("pca_proj","ppca", "gppca", "lrpca"), nu=1e-8){
+#' @export png.projection
+png.projection <- function(X, fit, nrank=NULL, method=c("pca_proj","ppca", "gppca", "lrpca"), nu=1e-8){
   if(FALSE){
     X=Xtrain; method=fit$method
     
@@ -168,8 +168,8 @@ png.projection2 <- function(X, fit, nrank=NULL, method=c("pca_proj","ppca", "gpp
       # uhat[i,] <- multidimconvexprojection(mu, as.vector(X[i,]), vhat)
       if( r > 1 ){
         uhat[i,] <- Solve_U_GP(as.vector(X[i,]), mu, vhat, gamma=0, nu=nu)
-      } else {
-        uhat[i,k] <- Solve_U_SP(as.vector(X[i,]), mu, vhat[,1], gamma=0)
+      } else if( r==1 ) {
+        uhat[i,1] <- Solve_U_SP(as.vector(X[i,]), mu, vhat[,1], gamma=0)
       }
     }
     # it=fit$fit.path[[r]]$it;  gamma=fit$params$gamma
@@ -177,6 +177,9 @@ png.projection2 <- function(X, fit, nrank=NULL, method=c("pca_proj","ppca", "gpp
     
   } else if( method == "lrpca" ){
     
+    if( length(fit$delta) == 1 ){
+      fit$delta <- rep(fit$delta, ncol(X))
+    }
     f <- switch(fit$zero.replace, 
                 "simple"=png.ZeroReplace.simple,
                 "additive"=png.ZeroReplace.additive,
